@@ -1,11 +1,15 @@
 import React, { useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { userInfo } from '../Redux/userSlice'
+import axios from "axios"
+
 
 const LoginForm = () => {
 
-    const [userbox, setUserbox] = useState(false)
-    const [passwordbox, setPasswordbox] = useState(false)
+    const [userbox, setUserbox] = useState(false) // for design purpose
+    const [passwordbox, setPasswordbox] = useState(false) // for design purpose
+    const [loginStatus, setloginStatus] = useState(false) // setting based on status code of response
+    const [message, setMessage] = useState(false) // setting based on clicking on login button to show or hide login message 
 
     const dispatch = useDispatch()
     const user = useRef(null)
@@ -25,11 +29,36 @@ const LoginForm = () => {
         setPasswordbox(false)
    }
 
-   const handleLogin = ()=>{
-       dispatch(userInfo({userName:user.current.value, password:pwd.current.value}))
+   const clearEntry = ()=>{
        user.current.value = ""
        pwd.current.value = ""
    }
+
+   const handleLogin = async () => {
+     try {
+       dispatch(
+         userInfo({ username: user.current.value, password: pwd.current.value })
+       );
+       const response = await axios.post("http://localhost:5000/login", {
+         username: user.current.value,
+         password: pwd.current.value,
+       });
+       setMessage(true);
+       clearEntry();
+       if (response.status===200) {
+           setloginStatus(true)
+       } else {
+           setloginStatus(false)  // this wont directly set the login status message instead if auth is false program will give error 401
+       }
+     } catch (error) {
+      if (error.response.status===401) { // As we are sending 401 from backend for false autharization axios is treating it as error so we are setting our message in catch error.
+          setloginStatus(false) // setting login status false here
+          clearEntry(); // clearing entry on false login too 
+      } else {
+        console.log("Error in login: " + error);
+      }
+     }
+   };
 
   return (
     <div className='px-28'>
@@ -50,6 +79,10 @@ const LoginForm = () => {
       className={`${passwordbox?' bg-slate-200 border-black':''} flex border py-4 px-2 `}>
         <img className='w-8' alt='' src='lock.svg' ></img>
         <input ref={pwd} className={`${passwordbox?' bg-slate-200':''} w-full px-2 outline-none`} type='password' maxLength={15} placeholder='Password'></input>
+      </div>
+      
+      <div className={`${message?"block":"hidden"} mt-1 mb-2`}>
+         {loginStatus?<p className='text-green-600'>Login successfull.</p>:<p className='text-red-700'>Invalid Username or Password.</p>}
       </div>
 
       <button onClick={()=>{handleLogin()}} className='border border-sky-600 bg-sky-600 rounded-3xl px-8 py-2 mt-4 hover:bg-white transition-all duration-300 text-white hover:text-sky-600'>Login</button>
