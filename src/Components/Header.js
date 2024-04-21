@@ -1,14 +1,22 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
+import { login } from '../Redux/userSlice';
 
 const Header = () => {
+
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const loginStatus = useSelector((store)=>{return store?.user?.status})
+  
+  useEffect(()=>{
+    if(loginStatus===false)navigate('/')
+  },[loginStatus])
+ 
+  const handleLogout = ()=>{
+    dispatch(login(false))
+   }
 
-  console.log(loginStatus)
-
-  const handleLogout = ()=>{return navigate("/") }
 
   return (
     <header className="bg-gray-800 text-white shadow-md shadow-black w-screen">

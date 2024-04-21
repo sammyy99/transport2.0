@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { login, userInfo } from '../Redux/userSlice'
 import axios from "axios"
+import { useNavigate } from 'react-router-dom'
 
 
 const LoginForm = () => {
@@ -14,6 +15,7 @@ const LoginForm = () => {
     const dispatch = useDispatch()
     const user = useRef(null)
     const pwd = useRef(null)
+    const navigate = useNavigate()
 
     const handleUserbox = ()=>{
           setUserbox(true)
@@ -48,6 +50,7 @@ const LoginForm = () => {
        if (response.status===200) {
            setloginStatus(true)
            dispatch(login(true)) // setting login status true to redux for global login check.
+           setTimeout(()=>{navigate('/home')},300)
        } else {
            setloginStatus(false)  // this wont directly set the login status message instead if auth is false program will give error 401
            dispatch(login(false)) // setting login status true to redux for global login check.
