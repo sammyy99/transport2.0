@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { userInfo } from '../Redux/userSlice'
+import { login, userInfo } from '../Redux/userSlice'
 import axios from "axios"
 
 
@@ -47,12 +47,15 @@ const LoginForm = () => {
        clearEntry();
        if (response.status===200) {
            setloginStatus(true)
+           dispatch(login(true)) // setting login status true to redux for global login check.
        } else {
            setloginStatus(false)  // this wont directly set the login status message instead if auth is false program will give error 401
+           dispatch(login(false)) // setting login status true to redux for global login check.
        }
      } catch (error) {
       if (error.response.status===401) { // As we are sending 401 from backend for false autharization axios is treating it as error so we are setting our message in catch error.
           setloginStatus(false) // setting login status false here
+          dispatch(login(false)) // setting login status true to redux for global login check.
           clearEntry(); // clearing entry on false login too 
       } else {
         console.log("Error in login: " + error);
@@ -82,7 +85,7 @@ const LoginForm = () => {
       </div>
       
       <div className={`${message?"block":"hidden"} mt-1 mb-2`}>
-         {loginStatus?<p className='text-green-600'>Login successfull.</p>:<p className='text-red-700'>Invalid Username or Password.</p>}
+         {loginStatus?<p className='text-green-600'>Login successfull.</p>:<p className='text-red-600'>Invalid Username or Password.</p>}
       </div>
 
       <button onClick={()=>{handleLogin()}} className='border border-sky-600 bg-sky-600 rounded-3xl px-8 py-2 mt-4 hover:bg-white transition-all duration-300 text-white hover:text-sky-600'>Login</button>
