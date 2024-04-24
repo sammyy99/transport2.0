@@ -18,7 +18,7 @@ const Homepage = () => {
       <Header/>
       <div className='flex h-full'>
 
-        <div className='w-[13%] bg-gray-800 pl-8 pt-4'>
+        <div className='w-[13%] bg-gray-800 px-8 pt-4 text-lg'>
         <Routes>
             <Route path='/*' element={<Master/>}/>
             <Route path='vouchers/*' element={<Vouchers/>}/>
@@ -28,7 +28,7 @@ const Homepage = () => {
         </Routes>   
         </div>
 
-        <div className='w-[87%] bg-gray-300'>
+        <div className='w-[87%] '>
             <Routes>
                 <Route path='' element={<States/>}/>
                 <Route path='stations' element={<Stations/>}/>

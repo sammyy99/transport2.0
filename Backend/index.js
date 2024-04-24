@@ -1,4 +1,4 @@
-import express from "express"
+import express, { json } from "express"
 import sql from "mssql"
 import cors from 'cors'
 
@@ -6,7 +6,7 @@ const app = express();
 const port = 5000;
 const config = {
     server:'SAMMY\\SQLEXPRESS',
-    database:'Transport',
+    database:'soluti14_transport',
     user:'localserver',
     password:'transport@123',
     options:{
@@ -38,7 +38,7 @@ app.get("/",(req,res)=>{
     res.send("Hello")
 })
 
-app.post("/login",async (req,res)=>{
+app.post("/login",async (req,res)=>{  // user table user fetch
     const data = await req.body
     const db = await sql.query('SELECT username, userpwd from usertable')
     const dbData = db.recordset[0]
@@ -48,4 +48,15 @@ app.post("/login",async (req,res)=>{
     } else {
         res.status(401).json({success:false,message:"Invalid Username or Password"})
     }
+})
+
+app.get("/states",async (req,res)=>{
+    try {
+        const db = await sql.query('Select * from SSTATE')
+        const dbData = db.recordset
+        res.json(dbData)
+    } catch (error) {
+        res.status(500).json({message:"Internal server error (Getting states from db failed)",err:error})
+        console.log(error)
+    }  
 })
