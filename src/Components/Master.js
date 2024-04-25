@@ -7,7 +7,7 @@ const Master = () => {
     <div className=" text-white">
       <div className="text-2xl font-bold mb-10">Masters</div>
       <ul className="flex flex-col space-y-4 text-md">
-        <Link to="" className="hover:text-blue-500 transition duration-300">
+        <Link to="states" className="hover:text-blue-500 transition duration-300">
           States
         </Link>
         <Link to="stations" className="hover:text-blue-500 transition duration-300">

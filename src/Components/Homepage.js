@@ -20,7 +20,7 @@ const Homepage = () => {
 
         <div className='w-[13%] bg-gray-800 px-8 pt-4 text-lg'>
         <Routes>
-            <Route path='/*' element={<Master/>}/>
+            <Route path='masters/*' element={<Master/>}/>
             <Route path='vouchers/*' element={<Vouchers/>}/>
             <Route path='ac-reports/*' element={<ACreports/>}/>
             <Route path='maintenance/*' element={<Maintenance/>}/>
@@ -30,10 +30,10 @@ const Homepage = () => {
 
         <div className='w-[87%] '>
             <Routes>
-                <Route path='' element={<States/>}/>
-                <Route path='stations' element={<Stations/>}/>
-                <Route path='groups' element={<Groups/>}/>
-                <Route path='accounts' element={<Accounts/>}/>
+                <Route path='masters/states' element={<States/>}/>
+                <Route path='masters/stations' element={<Stations/>}/>
+                <Route path='masters/groups' element={<Groups/>}/>
+                <Route path='masters/accounts' element={<Accounts/>}/>
             </Routes>
         </div>
       </div>

@@ -23,7 +23,7 @@ const Header = () => {
       <nav className="flex  justify-between mx-auto p-4 px-8">
         <div className="font-extrabold">Solution Point</div>
         <ul className="flex space-x-7 text-lg">
-          <Link to="" className="hover:text-blue-500 transition duration-300">Masters</Link>
+          <Link to="masters" className="hover:text-blue-500 transition duration-300">Masters</Link>
           <Link to="vouchers" className="hover:text-blue-500 transition duration-300">Vouchers</Link>
           <Link to="ac-reports" className="hover:text-blue-500 transition duration-300">A/C Reports</Link>
           <Link to="maintenance" className="hover:text-blue-500 transition duration-300">Maintenance</Link>
