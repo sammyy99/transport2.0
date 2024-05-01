@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
 const States = () => {
-  const [states, setStates] = useState([]);
+  const [states, setStates] = useState();
+  const [statesList, setStatesList] = useState()
   const [showAddRow, setShowAddRow] = useState(false)
+
+  const search = useRef()
 
   const addRow = ()=>{
     setShowAddRow(true)
@@ -17,16 +20,24 @@ const States = () => {
     try {
       const response = await axios.get("http://localhost:5000/states");
       setStates(response.data);
+      setStatesList(response.data)
+      //console.log("DB data fetched")
     } catch (error) {
       console.log("Error in fetching data " + error);
     }
   };
 
+  const searchedStates = ()=>{
+     const searchedStates = states.filter((result)=>{
+     return result.STATE.toLowerCase().includes(search.current.value.toLowerCase())
+    })
+     setStatesList(searchedStates)
+  }
+
   useEffect(() => {
     getStates();
   }, []);
 
-  if (!states) return null;
 
   return (
     <div className="w-[80%] h-full mx-auto">
@@ -37,6 +48,8 @@ const States = () => {
           <div className="w-[40%] my-auto">Search</div>
           <div className="w-[40%] px-16">
             <input
+              ref={search}
+              onChange={()=>{searchedStates()}}
               className="w-full px-4 py-1 rounded-md text-black"
               type="text"
               placeholder="Type here..."
@@ -65,7 +78,7 @@ const States = () => {
         </div>
 
         <div className="py-2">
-          {states.map((row) => {
+          {!statesList? null : (statesList.map((row) => {
             return (
               <div key={row.SID} className="flex w-full border-b py-1">
                 <div className="w-[40%]">{row.STATE}</div>
@@ -73,7 +86,7 @@ const States = () => {
                 <div className="w-[20%]"></div>
               </div>
             );
-          })}
+          }))}
         </div>
       </div>
     </div>

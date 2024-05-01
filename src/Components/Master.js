@@ -13,9 +13,9 @@ const Master = () => {
         <Link to="stations" className="hover:text-blue-500 transition duration-300">
           Stations
         </Link>
-        <Link to="groups" className="hover:text-blue-500 transition duration-300">
+        {/*<Link to="groups" className="hover:text-blue-500 transition duration-300">
           Groups
-        </Link>
+        </Link>*/}
         <Link to="accounts" className="hover:text-blue-500 transition duration-300">
           Accounts
         </Link>

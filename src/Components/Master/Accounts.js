@@ -1,6 +1,20 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from 'axios'
 
 const Accounts = () => {
+
+  const [account, setAccount] = useState(null)
+  console.log(account)
+  
+  const getAccounts = async ()=>{
+       const response = await axios.get('http://localhost:5000/accounts');
+       setAccount(response.data);
+     }
+
+     useEffect(()=>{
+      getAccounts();
+     },[])
+
   return (
     <div className="h-full col-span-12 px-16 pt-4 pb-16 overflow-scroll">
       <div className="flex w-full justify-center text-2xl">

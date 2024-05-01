@@ -59,4 +59,26 @@ app.get("/states",async (req,res)=>{
         res.status(500).json({message:"Internal server error (Getting states from db failed)",err:error})
         console.log(error)
     }  
+})  
+
+app.get("/stations",async (req,res)=>{
+    try {
+        const db = await sql.query('Select * from SDIST')
+        const dbData = await db.recordset
+        res.json(dbData)
+    } catch (error) {
+        res.status(500).json({message:"Internal server error (Getting stations from db failed)",err:error})
+        console.log(error)
+    }  
+})
+
+app.get("/accounts",async (req,res)=>{
+    try {
+        const db = await sql.query('Select * from WEBID')
+        const dbData = await db.recordset
+        res.json(dbData)
+    } catch (error) {
+        res.status(500).json({message:"Internal server error(Getting accounts from db failed)",err:error})
+        console.log(error)
+    }
 })
