@@ -1,92 +1,58 @@
-import React, { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import React from "react";
 
 const States = () => {
-  const [states, setStates] = useState();
-  const [statesList, setStatesList] = useState()
-  const [showAddRow, setShowAddRow] = useState(false)
-
-  const search = useRef()
-
-  const addRow = ()=>{
-    setShowAddRow(true)
-  } 
-
-  const hideAddRow = ()=>{
-    setShowAddRow(!showAddRow)
-  }
-
-  const getStates = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/states");
-      setStates(response.data);
-      setStatesList(response.data)
-      //console.log("DB data fetched")
-    } catch (error) {
-      console.log("Error in fetching data " + error);
-    }
-  };
-
-  const searchedStates = ()=>{
-     const searchedStates = states.filter((result)=>{
-     return result.STATE.toLowerCase().includes(search.current.value.toLowerCase())
-    })
-     setStatesList(searchedStates)
-  }
-
-  useEffect(() => {
-    getStates();
-  }, []);
-
-
   return (
-    <div className="w-[80%] h-full mx-auto">
-      <div className="text-2xl text-center my-4 py-2 font-bold">States</div>
+    <div className="w-full flex justify-center">
+      <div className="w-[1110px] ">
+        <div className="my-4 text-2xl font-bold text-center">States details</div>
 
-      <div className="h-[65%] text-center overflow-y-auto border border-black shadow-md shadow-gray-600 rounded-md">
-        <div className="flex sticky top-0 z-10 w-full border-b border-black bg-slate-600 text-white py-1">
-          <div className="w-[40%] my-auto">Search</div>
-          <div className="w-[40%] px-16">
-            <input
-              ref={search}
-              onChange={()=>{searchedStates()}}
-              className="w-full px-4 py-1 rounded-md text-black"
-              type="text"
-              placeholder="Type here..."
-            ></input>
+        <div className="py-4 px-8 border border-black rounded-md">
+          <div className="grid grid-cols-3 mt-8 ">
+            <div className="col-span-1 flex  space-x-1">
+              <button className="py-1 px-3 border border-black rounded-md">
+                Add
+              </button>
+              <button className="py-1 px-3 border border-black rounded-md">
+                Edit
+              </button>
+              <button className="py-1 px-3 border border-black rounded-md">
+                Search
+              </button>
+            </div>
+            <div className="col-span-1 flex justify-center space-x-1">
+              <button className=" border border-black rounded-md w-8 p-1">
+                <img alt="" src="/start.svg"></img>
+              </button>
+              <button className=" border border-black rounded-md w-8 p-1">
+                <img alt="" src="/previous.svg"></img>
+              </button>
+              <button className=" border border-black rounded-md w-8 p-1">
+                <img alt="" src="/next.svg"></img>
+              </button>
+              <button className=" border border-black rounded-md w-8 p-1">
+                <img alt="" src="/end.svg"></img>
+              </button>
+            </div>
+            <div className="col-span-1 justify-end flex">
+              <button className="py-1 px-3 border border-black rounded-md">
+                Delete
+              </button>
+            </div>
           </div>
-          <div className="w-[20%]">
-            <button onClick={()=>{addRow()}} className="mx-auto px-3 py-1 rounded-md bg-green-600">
-              Add +
-            </button>
-          </div>
-        </div>
 
-        <div className="flex sticky top-[2.55rem] z-10 w-full border-b border-black bg-slate-600 text-white py-2">
-          <div className="w-[40%]">State Name</div>
-          <div className="w-[40%]">State Code</div>
-          <div className="w-[20%]">Edit</div>
-        </div>
-        
-        <div className={`${showAddRow?'block':'hidden'} flex sticky top-[5.10rem] py-1 bg-slate-200`}>
-          <div className="w-[40%] px-16"><input className="w-full border border-gray-500 py-1 px-4 rounded-md text-center" type="text" placeholder="Enter State Name.."></input></div>
-          <div className="w-[40%] px-16"><input className="w-full border border-gray-500 py-1 px-4 rounded-md text-center" type="text" placeholder="Enter State Code.."></input></div>
-          <div className="w-[20%] flex justify-center space-x-2">
-            <img className="w-8 hover:cursor-pointer bg-white rounded-md" alt="" src='/tick.svg'></img>
-            <img onClick={()=>{hideAddRow()}} className="w-8 hover:cursor-pointer bg-white rounded-md" alt="" src='/cross.svg'></img>
-          </div>
-        </div>
+          <div className="mt-8 px-20 py-6 border border-black rounded-md grid grid-cols-8">
+  <div className="col-span-2 flex flex-col justify-center">
+    <div className="font-semibold mb-2">State Name :</div>
+    <div className="font-semibold mb-6">State Name :</div>
+    <div className="font-semibold">Record :</div>
+  </div>
+  <div className="col-span-3 flex flex-col justify-center">
+    <input className="block border border-black rounded-sm px-2 mb-2 w-full" type="text"></input>
+    <input className="block border border-black rounded-sm px-2 mb-6 w-full" type="text"></input>
+    <div className="font-semibold border px-2 border-black w-1/4">0/0</div>
+  </div>
+</div>
 
-        <div className="py-2">
-          {!statesList? null : (statesList.map((row) => {
-            return (
-              <div key={row.SID} className="flex w-full border-b py-1">
-                <div className="w-[40%]">{row.STATE}</div>
-                <div className="w-[40%]">{row.SNAME}</div>
-                <div className="w-[20%]"></div>
-              </div>
-            );
-          }))}
         </div>
       </div>
     </div>

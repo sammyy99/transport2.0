@@ -4,7 +4,6 @@ import axios from 'axios'
 const Accounts = () => {
 
   const [account, setAccount] = useState(null)
-  console.log(account)
   
   const getAccounts = async ()=>{
        const response = await axios.get('http://localhost:5000/accounts');
