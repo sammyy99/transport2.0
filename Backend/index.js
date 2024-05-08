@@ -50,10 +50,12 @@ app.post("/login",async (req,res)=>{  // user table user fetch
     }
 })
 
-app.get("/states",async (req,res)=>{
+app.get("/state/:id",async (req,res)=>{
+        const id =await req.params.id
     try {
-        const db = await sql.query('Select * from SSTATE')
-        const dbData = db.recordset
+        const dbState = await sql.query(`Select * from SSTATE where SID =${id}`);
+        const dbCount = await sql.query(`select count(*) as record_count from SSTATE`)
+        const dbData = {state:dbState.recordset, count: dbCount.recordset}
         res.json(dbData)
     } catch (error) {
         res.status(500).json({message:"Internal server error (Getting states from db failed)",err:error})
