@@ -37,7 +37,7 @@ connect()
 app.get("/",(req,res)=>{
     res.send("Hello")
 })
-
+//---------------------------------------------------------------Login-----------------------------------------------------------------------
 app.post("/login",async (req,res)=>{  // user table user fetch
     const data = await req.body
     const db = await sql.query('SELECT username, userpwd from usertable')
@@ -49,7 +49,9 @@ app.post("/login",async (req,res)=>{  // user table user fetch
         res.status(401).json({success:false,message:"Invalid Username or Password"})
     }
 })
+//---------------------------------------------------------------Login-----------------------------------------------------------------------
 
+//---------------------------------------------------------------States-----------------------------------------------------------------------
 app.get("/state/:id",async (req,res)=>{
         const id =await req.params.id
     try {
@@ -62,6 +64,30 @@ app.get("/state/:id",async (req,res)=>{
         console.log(error)
     }  
 })  
+
+app.get("/state/searchState/:search",async (req,res)=>{
+    const searchedState = req.params.search
+    console.log(searchedState)
+    try {
+        const dbStates = await sql.query(`SELECT * FROM SSTATE WHERE STATE LIKE '%${searchedState}%'`)
+        const dbdata = await dbStates.recordset
+        res.json(dbdata)
+    } catch (error) {
+        res.status(500).json({message:"Internal server error (Getting searched states from db failed)",err:error})
+        console.log(error)
+    }
+})
+
+app.post("/addstate/check",(req,res)=>{
+       const body = req.body
+       console.log(body)
+})
+
+app.post("/addsname/check",(req,res)=>{
+
+})
+
+//---------------------------------------------------------------States-----------------------------------------------------------------------
 
 app.get("/stations",async (req,res)=>{
     try {
