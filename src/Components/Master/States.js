@@ -4,24 +4,34 @@ import axios from 'axios'
 const States = () => {
 
   const [state,setState]=useState() // main state data coming in state
-  const [searchedStates, setSearchedStates] = useState() // searched states will come inside here to render states in search table
+  const [searchedStates, setSearchedStates] = useState([]) // searched states will come inside here to render states in search table
   const [searchedValue,setSearchedValue] = useState('') // used this state variable to store searched value from table inputbox and to send value to backend
   const [stateCount, setStateCount]=useState() // this count is actually total count getting from db records 
   const [stateID, setStateID] = useState(1) // state id for managing record column only 
   const [sid, setSid] = useState()  // we receive sid from db data here
   const [isNewState, setIsNewState] = useState(false) // used as switch of add and then further conditions of textbox
   const [isEditing, setIsEditing]= useState(false) // used as switch of edit and then further conditions of textbox
+
   const [isSerching, setIsSearching]= useState(false)// used as switch for displaying search table
+  const [selectedRowIndex, setSelectedRowIndex] = useState(0); // used for navigating inside table
+
   const [newStateName, setNewStateName] = useState('') // used for storing and displaying value of new state we typing and adding ---- with out using this typing not possible
   const [newShortName, setNewShortName] = useState('') // used for stroing and displaying value of new sname we typing and adding ---- with out using this typing not possible
   const [editStateName, setEditStateName] = useState() // used for editing the state name and storing the new edited value also displaying ---- with out using this typing not possible
   const [editShortName, setEditShortName] = useState() // used for editing the short name and storing the new edited value also displaying ---- with out using this typing not possible
 
+  const [displayMessage, setDisplayMessage]=useState("") // to display messages
+  
   const inputRef = useRef(null)
   const searchRef = useRef(null)
+  //console.log("selected row index "+selectedRowIndex);
+  //console.log("Searchedstate length "+searchedStates.length)
+    console.log(sid)
+    console.log(newStateName)
 
  //---------------------------Hooks end--------------------------------
 
+ //---------------------------Fetch Functions---------------------------
   const getState = async (id)=>{
       const response = await axios.get(`http://localhost:5000/state/${id}`)
       //console.log(response.data)
@@ -34,7 +44,33 @@ const States = () => {
         const response = await axios.get(`http://localhost:5000/state/searchState/${value}`) 
         setSearchedStates(response.data)
   }
+ //---------------------------Fetch Functions---------------------------
 
+ //--------------------------Add and Edit handling----------------------------
+ const handleAddStateCheck =async (col)=>{
+      const response = await axios.post(`http://localhost:5000/state/add/edit/check`,{localSid:0,name:newStateName,sname:newShortName,typeOf:col})
+      console.log(response.data)
+ }
+ //--------------------------Add and Edit handling----------------------------
+
+  //--------------------------------Search Handling Functions----------------------
+  const handleSearch = (e) => {
+    const enteredValue = e.target.value.toUpperCase();
+    setSearchedValue(enteredValue)
+    enteredValue && getSearchedStates(enteredValue)
+    setSelectedRowIndex(0); // setting focused row again first one
+  }
+
+  const handleRecordSelection = (row,index)=>{
+    setSelectedRowIndex(index) // this is when i click once this handleRecordSelection gets executed so that even on click i get blue highlighted row
+    setStateID(row.SID)
+    setSid(row.SID)
+    console.log('SID '+row.SID)
+    console.log('Name '+row.STATE)
+  }
+  //--------------------------------Search Handling Functions----------------------
+
+  //--------------------------------Switchs functions----------------------------------
   const addStateSwitchOn = ()=>{
       setIsNewState(true);
       inputRef.current.focus();
@@ -54,22 +90,16 @@ const States = () => {
 
   const searchSwitchOn = ()=>{
         setIsSearching(true);
-        searchRef.current.focus();
+        setSearchedValue("")
+        setSelectedRowIndex(0)
   }
   const searchSwitchOff = ()=>{
         setIsSearching(false)
   }
+  //--------------------------------Switchs functions----------------------------------
 
-  const checkAddEdit =async ()=>{
-    setSid(0)
-    try {
-    const response = await axios.post('http://localhost:5000/addstate/check',{name:newStateName, id:sid})
-    console.log(response)      
-    } catch (error) {
-      console.log('Error in adding : '+error)
-    }
-  }
 
+  //--------------------------------Arrows buttons functions----------------------------------
   const nextState = ()=>{
     if (stateID<=stateCount-1) {  
       setStateID(stateID+1)
@@ -91,14 +121,54 @@ const States = () => {
   const firstState=()=>{
     setStateID(1)
   }
+  //--------------------------------Arrows buttons functions Ends------------------------------
+
+  //--------------------------------Delete functions------------------------------
+  const handleDelete = async (id)=>{
+    const response = await axios.delete(`http://localhost:5000/state/delete/${id}`)
+    console.log(response.data)
+    }
+  //--------------------------------Delete functions Ends-------------------------
+
 
   useEffect(()=>{
-     getState(stateID)
-  },[stateID])
+    
+      getState(stateID);
+
+     if (isSerching) {
+      searchRef.current?.focus();
+  };
+
+     const handleKeyDown = (event) => {
+      if (event.key === 'ArrowUp') {
+        setSelectedRowIndex((prevIndex) => {
+          return prevIndex > 0 ? prevIndex - 1 : 0;
+        });
+      } else if (event.key === 'ArrowDown') {
+        setSelectedRowIndex((prevIndex) => {
+          return prevIndex < searchedStates.length - 1 ? prevIndex + 1 : searchedStates.length - 1;
+        });
+      } else if(event.key === 'Enter'){
+        if (searchedStates.length > 0 && selectedRowIndex >= 0) {
+          const selectedRow = searchedStates[selectedRowIndex];
+          if (selectedRow) {
+              handleRecordSelection(selectedRow);
+              searchSwitchOff()
+          }
+      }
+      } else if (event.key === 'Escape') {
+         searchSwitchOff()
+      }
+  };
+     document.addEventListener('keydown',handleKeyDown)
+     return ()=> {
+      document.removeEventListener('keydown',handleKeyDown)
+     }
+  },[stateID,searchedStates.length,selectedRowIndex,searchedStates,isSerching])
 
   return (
     <div className="w-full flex justify-center">
-      <div className="w-[1110px] ">
+      <div className="w-[700px] ">
         <div className="my-4 text-2xl font-bold text-center">
           States details
         </div>
@@ -151,7 +221,7 @@ const States = () => {
               </button>
             </div>
             <div className="col-span-1 justify-end flex">
-              <button className="py-1 px-3 border border-black rounded-md">
+              <button onClick={()=>{handleDelete(sid)}} className="py-1 px-3 border border-black rounded-md">
                 Delete
               </button>
             </div>
@@ -171,7 +241,11 @@ const States = () => {
                   <table className="w-full">
                     <tbody>
                       {searchedStates && searchedStates.map((row, index) => (
-                        <tr key={row.SID} className="border-b">
+                        <tr key={row.SID} 
+                        className={`${selectedRowIndex===index?'bg-blue-600 text-white':''} border-b font-bold hover:cursor-pointer hover:shadow-md`}
+                        onClick={()=>{handleRecordSelection(row,index)}}
+                        onDoubleClick={()=>{searchSwitchOff()}}
+                        >
                           <td className="w-2/3 border-r border-black pl-2">{row.STATE}</td>
                           <td className="w-1/3 pl-2">{row.SNAME}</td>
                         </tr>
@@ -191,21 +265,12 @@ const States = () => {
                     placeholder="Search by state...."
                     className="border border-black rounded-sm py-[2px] px-2" type="text"
                     value={searchedValue}
-                    onChange={(e) => {
-                      const enteredValue = e.target.value.toUpperCase();
-                      setSearchedValue(enteredValue)
-                      enteredValue && getSearchedStates(enteredValue)
-                    }}
-                  ></input>
+                    onChange={handleSearch}
+                  ></input>                
+                   <button onClick={()=>{searchSwitchOff()}} className="border border-black rounded-md px-2 py-[2px]">Cancel</button>
+
                 </div>
 
-                <div className="w-full mt-2">
-                  
-                  <div className="flex space-x-4 justify-center">
-                    <button className="border border-black rounded-md px-2 py-[2px]">Select</button>
-                    <button onClick={()=>{searchSwitchOff()}} className="border border-black rounded-md px-2 py-[2px]">Cancel</button>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -218,31 +283,31 @@ const States = () => {
               <div className="font-semibold mb-2">State Name :</div>
               <div className="font-semibold mb-6">State Name :</div>
               {isNewState||isEditing?(<button onClick={()=>{addStateSwitchOff(); editStateSwitchOff();}} className="py-[2px] w-16 border border-black rounded-md">Back</button>):(
-                <div className="font-semibold">Record :</div>
+                /*<div className="font-semibold">Record :</div>*/null
               )}
             </div>
-            <div className="col-span-3 flex flex-col justify-center">
+            <div className="col-span-5 flex flex-col justify-center">
               <input
                 type="text"
                 ref={inputRef}
                 className="block border border-black rounded-sm px-2 mb-2 w-full"
                 value={isNewState?newStateName:(isEditing?editStateName:(!state ? "" : state.STATE))}
                 readOnly={!isNewState && !isEditing}
-                onChange={(e)=> isNewState?setNewStateName(e.target.value):(isEditing?setEditStateName(e.target.value):null)}
-                onBlur={()=>checkAddEdit()}
+                onChange={(e)=> isNewState?setNewStateName(e.target.value.toUpperCase()):(isEditing?setEditStateName(e.target.value.toUpperCase()):null)}
+                //onBlur={()=>{handleAddStateCheck("state")}}
               ></input>
               <input
                 type="text"
                 className="block border border-black rounded-sm px-2 mb-6 w-full"
                 value={isNewState?newShortName:(isEditing?editShortName:(!state ? "" : state.SNAME))}
                 readOnly={!isNewState && !isEditing}
-                onChange={(e)=>isNewState?setNewShortName(e.target.value):(isEditing?setEditShortName(e.target.value):null)}
-                onBlur={()=>checkAddEdit()}
+                onChange={(e)=>isNewState?setNewShortName(e.target.value.toUpperCase()):(isEditing?setEditShortName(e.target.value.toUpperCase()):null)}
+                //onBlur={()=>{handleAddStateCheck("sname")}}
               ></input>
               { isNewState || isEditing? (<button className="py-[2px] w-16 border border-black rounded-md">Save</button>) : (
-                <div className="font-semibold border px-2 border-black w-1/4">
+                /*<div className="font-semibold border px-2 border-black w-1/4">
                 {stateID}/{stateCount}
-              </div>)}
+              </div>*/null)}
             </div>
             
           </div>

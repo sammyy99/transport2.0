@@ -67,9 +67,9 @@ app.get("/state/:id",async (req,res)=>{
 
 app.get("/state/searchState/:search",async (req,res)=>{
     const searchedState = req.params.search
-    console.log(searchedState)
+    //console.log(searchedState)
     try {
-        const dbStates = await sql.query(`SELECT * FROM SSTATE WHERE STATE LIKE '%${searchedState}%'`)
+        const dbStates = await sql.query(`SELECT * FROM SSTATE WHERE STATE LIKE '%${searchedState}%' ORDER BY STATE`)
         const dbdata = await dbStates.recordset
         res.json(dbdata)
     } catch (error) {
@@ -78,9 +78,33 @@ app.get("/state/searchState/:search",async (req,res)=>{
     }
 })
 
-app.post("/addstate/check",(req,res)=>{
-       const body = req.body
-       console.log(body)
+app.delete("/state/delete/:id",async (req,res)=>{
+    const sid = req.params.id
+    console.log(sid)
+    try {
+        const dbDistrict = await sql.query(`SELECT DISTRICT from SDIST WHERE SID =${sid}`)
+        console.log(dbDistrict.recordset)
+        if (dbDistrict.recordset.length>0) {
+            res.json({msg:"District exist. State cannot be deleted."})
+        } else {
+            await sql.query(`DELETE FROM example WHERE SID = ${sid}`)
+            res.json({msg:"Successfully deleted"})
+        }
+    } catch (error) {
+        res.status(500).json({message:"Internal server error (Getting searched states from db failed)",err:error})
+        console.log(error)
+    }
+})
+
+app.post("/state/add/edit/check",async (req,res)=>{
+       const data = req.body
+       console.log(data)
+       
+       if (data.typeOf === "state") {
+        console.log("state")
+       }else if (data.typeOf === "sname") {
+         console.log("sname")
+       }
 })
 
 app.post("/addsname/check",(req,res)=>{
