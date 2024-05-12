@@ -96,20 +96,46 @@ app.delete("/state/delete/:id",async (req,res)=>{
     }
 })
 
-app.post("/state/add/edit/check",async (req,res)=>{
-       const data = req.body
-       console.log(data)
+app.post("/state/addEdit/check",async (req,res)=>{
+
+    try {
+        const data = req.body
+        console.log(data)
+        if (data.typeOf === 'state') {
+            try {
+                const dbresponse = await await sql.query(`SELECT STATE FROM SSTATE WHERE STATE = '${data.name}' AND SID != ${data.localSid}`)
+                const dbdata = await dbresponse.recordset
+                if (dbdata.length>0) {
+                    res.json({msgState:"State already exist",allowed:false})
+                } else {
+                    res.json({msgState:"Valid State",allowed:true})
+                }
+              } catch (error) {
+                res.status(500).json({message:"Internal server error (Error in checking this state name)",err:error})
+                console.log(error)
+              }
+
+        }else if (data.typeOf === 'scode') {
+            try {
+                const dbresponse = await await sql.query(`SELECT SNAME FROM SSTATE WHERE SNAME = '${data.sname}' AND SID != ${data.localSid}`)
+                const dbdata = await dbresponse.recordset
+                if (dbdata.length>0) {
+                    res.json({msgState:"StateCode already exist",allowed:false})
+                } else {
+                    res.json({msgState:"Valid StateCode",allowed:true})
+                }
+              } catch (error) {
+                res.status(500).json({message:"Internal server error (Error in checking this state code)",err:error})
+                console.log(error)
+              }
+        }
+    } catch (error) {
+        res.status(500).json({message:"Internal server error (Error in checking this state data)",err:error})
+        console.log(error)
+    }
        
-       if (data.typeOf === "state") {
-        console.log("state")
-       }else if (data.typeOf === "sname") {
-         console.log("sname")
-       }
 })
 
-app.post("/addsname/check",(req,res)=>{
-
-})
 
 //---------------------------------------------------------------States-----------------------------------------------------------------------
 

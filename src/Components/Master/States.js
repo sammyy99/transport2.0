@@ -20,7 +20,10 @@ const States = () => {
   const [editStateName, setEditStateName] = useState() // used for editing the state name and storing the new edited value also displaying ---- with out using this typing not possible
   const [editShortName, setEditShortName] = useState() // used for editing the short name and storing the new edited value also displaying ---- with out using this typing not possible
 
-  const [displayMessage, setDisplayMessage]=useState("") // to display messages
+  const [displayMessageState, setDisplayMessageState]=useState("") // to display State check messages
+  const [displayMessageSname, setDisplayMessageSname]=useState("") // to display Sname check messages
+  const [addStateAllowed, setAddStateAllowed] = useState(null) // to allow newstate to be add or not
+  const [addSnameAllowed, setAddnameAllowed] = useState(null) // to allow newsname to be add or not
   
   const inputRef = useRef(null)
   const searchRef = useRef(null)
@@ -47,9 +50,17 @@ const States = () => {
  //---------------------------Fetch Functions---------------------------
 
  //--------------------------Add and Edit handling----------------------------
- const handleAddStateCheck =async (col)=>{
-      const response = await axios.post(`http://localhost:5000/state/add/edit/check`,{localSid:0,name:newStateName,sname:newShortName,typeOf:col})
+ const handleAddStateCheck = async (col)=>{
+      const response = await axios.post(`http://localhost:5000/state/addEdit/check`,{localSid:0,name:newStateName,sname:newShortName,typeOf:col})
       console.log(response.data)
+      response.data.msg && setDisplayMessageState(response.data.msg)
+      response.data.msg && setDisplayMessageSname(response.data.msg)
+ }
+ const handleEditStateCheck = async (col)=>{
+      const response = await axios.post(`http://localhost:5000/state/addEdit/check`,{localSid:sid,name:editStateName,sname:editShortName,typeOf:col,edit:true})
+      console.log(response.data)
+      response.data.msg && setDisplayMessageState(response.data.msg)
+      response.data.msg && setDisplayMessageSname(response.data.msg)
  }
  //--------------------------Add and Edit handling----------------------------
 
@@ -77,6 +88,8 @@ const States = () => {
   }
   const addStateSwitchOff = ()=>{
     setIsNewState(false);
+    setNewStateName("")
+    setNewShortName("")
   }
 
   const editStateSwitchOn = ()=>{
@@ -158,6 +171,8 @@ const States = () => {
       }
       } else if (event.key === 'Escape') {
          searchSwitchOff()
+         addStateSwitchOff()
+         editStateSwitchOff()
       }
   };
      document.addEventListener('keydown',handleKeyDown)
@@ -173,8 +188,8 @@ const States = () => {
           States details
         </div>
 
-        <div className="py-4 px-8 border border-black rounded-md">
-          <div className="grid grid-cols-3 mt-8 ">
+        <div className="py-4 px-8 border border-black rounded-md shadow-md shadow-black">
+          <div className="grid grid-cols-3 mt-8  font-semibold ">
             <div className="col-span-1 flex  space-x-1">
               <button onClick={()=>{addStateSwitchOn()}} className={`py-1 px-3 border border-black rounded-md ${isNewState?"bg-gray-300":""}`}>
                 Add
@@ -221,7 +236,9 @@ const States = () => {
               </button>
             </div>
             <div className="col-span-1 justify-end flex">
-              <button onClick={()=>{handleDelete(sid)}} className="py-1 px-3 border border-black rounded-md">
+              <button 
+              onClick={()=>{handleDelete(sid)}} 
+              className="py-1 px-3  rounded-md border border-black ">
                 Delete
               </button>
             </div>
@@ -237,7 +254,7 @@ const States = () => {
                   <div className="w-2/3 pl-2 ">State Name</div>
                   <div className="w-1/3 ">State Code</div>
                 </div>
-                <div className="overflow-y-scroll h-[13.5rem]">
+                <div className="overflow-y-scroll h-[15.8rem]">
                   <table className="w-full">
                     <tbody>
                       {searchedStates && searchedStates.map((row, index) => (
@@ -282,7 +299,7 @@ const States = () => {
             <div className="col-span-2 flex flex-col justify-center">
               <div className="font-semibold mb-2">State Name :</div>
               <div className="font-semibold mb-6">State Name :</div>
-              {isNewState||isEditing?(<button onClick={()=>{addStateSwitchOff(); editStateSwitchOff();}} className="py-[2px] w-16 border border-black rounded-md">Back</button>):(
+              {isNewState||isEditing?(<button onClick={()=>{addStateSwitchOff(); editStateSwitchOff();}} className="py-[2px] w-16 border border-black rounded-md">Cancel</button>):(
                 /*<div className="font-semibold">Record :</div>*/null
               )}
             </div>
@@ -294,7 +311,7 @@ const States = () => {
                 value={isNewState?newStateName:(isEditing?editStateName:(!state ? "" : state.STATE))}
                 readOnly={!isNewState && !isEditing}
                 onChange={(e)=> isNewState?setNewStateName(e.target.value.toUpperCase()):(isEditing?setEditStateName(e.target.value.toUpperCase()):null)}
-                //onBlur={()=>{handleAddStateCheck("state")}}
+                onBlur={isNewState && (newStateName !== '')?()=>{handleAddStateCheck("state")}:(isEditing?()=>{handleEditStateCheck("state")}:null)}
               ></input>
               <input
                 type="text"
@@ -302,9 +319,9 @@ const States = () => {
                 value={isNewState?newShortName:(isEditing?editShortName:(!state ? "" : state.SNAME))}
                 readOnly={!isNewState && !isEditing}
                 onChange={(e)=>isNewState?setNewShortName(e.target.value.toUpperCase()):(isEditing?setEditShortName(e.target.value.toUpperCase()):null)}
-                //onBlur={()=>{handleAddStateCheck("sname")}}
+                onBlur={isNewState && (newShortName !== '')?()=>{handleAddStateCheck("scode")}:(isEditing?()=>{handleEditStateCheck("scode")}:null)}
               ></input>
-              { isNewState || isEditing? (<button className="py-[2px] w-16 border border-black rounded-md">Save</button>) : (
+              { isNewState || isEditing? (<button className="py-[2px] mb-[0.32rem] w-16 border border-black rounded-md">Save</button>) : (
                 /*<div className="font-semibold border px-2 border-black w-1/4">
                 {stateID}/{stateCount}
               </div>*/null)}
