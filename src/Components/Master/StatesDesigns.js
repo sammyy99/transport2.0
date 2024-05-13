@@ -90,3 +90,27 @@
   );
 */
 //----------------------------------------------------------------------------First design
+
+ /*--------------------------------Arrows buttons functions----------------------------------
+  const nextState = ()=>{
+    if (stateID<=stateCount-1) {  
+      setStateID(stateID+1)
+    } else {   
+    }       
+  }
+
+  const previousState = ()=>{
+    if (stateID>=2) {
+      setStateID(stateID-1)
+    } else {   
+    }       
+  }
+
+  const lastState=()=>{
+    setStateID(stateCount);
+  }
+
+  const firstState=()=>{
+    setStateID(1)
+  }
+  //--------------------------------Arrows buttons functions Ends------------------------------*/

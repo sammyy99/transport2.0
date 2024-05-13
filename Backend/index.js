@@ -91,7 +91,7 @@ app.delete("/state/delete/:id",async (req,res)=>{  // for delete
         if (dbDistrict.recordset.length>0) {
             res.json({msg:"🚫 District exist. State cannot be deleted.",alert:false})
         } else {
-            await sql.query(`DELETE FROM EXAMPLE WHERE SID = ${sid}`)
+            await sql.query(`DELETE FROM SSTATE WHERE SID = ${sid}`)
             res.json({msg:"✅ Successfully deleted",alert:true})
         }
     } catch (error) {

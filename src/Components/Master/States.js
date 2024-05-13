@@ -82,6 +82,7 @@ const States = () => {
  }
 
  const handleSaveOnAdd = async ()=>{
+  
     const response = await axios.post(`http://localhost:5000/state/add/save`,{state:newStateName,sname:newShortName})
     setPopupMessage(response.data.msg)
     addStateSwitchOff()
@@ -224,56 +225,45 @@ const States = () => {
           States details
         </div>
 
-        <div className="py-4 px-8 border border-black rounded-md shadow-md shadow-black">
-          <div className="grid grid-cols-3 mt-4  font-semibold ">
+        <div className="py-4 px-8 border border-black rounded-md shadow-md shadow-black bg-slate-200">
+
+          <div className="mt-4  font-bold flex justify-between">
+
             <div className="col-span-1 flex  space-x-1">
               <button onClick={()=>{addStateSwitchOn()}} 
-              className={`py-1 px-3 border border-black rounded-md ${isNewState?"bg-gray-300":""}`}>
-                Add
+              className={`py-1 px-3 w-20 bg-green-600 text-white rounded-md transition-all duration-200 hover:bg-green-500 ${isNewState?"shadow-md shadow-black":""}`}>
+                Add+
               </button>
               <button onClick={()=>editStateSwitchOn()} 
-              className={`py-1 px-3 border border-black rounded-md ${isEditing?"bg-gray-300":""} ${!state?'bg-gray-400 border-none text-gray-300 cursor-not-allowed pointer-events-none':''}`}>
+              className={`py-1 px-3 w-20 rounded-md transition-all duration-200 ${isEditing?"shadow-md shadow-black":""} ${!state?'bg-gray-400 border-none text-gray-200 cursor-not-allowed pointer-events-none':'bg-blue-600 text-white hover:bg-blue-500'}`}>
                 Edit
               </button>
               <button onClick={()=>{getState();searchSwitchOn();}} 
-              className="py-1 px-3 border border-black rounded-md">
+              className={`py-1 px-3 w-20 rounded-md bg-yellow-500 hover:bg-yellow-400 text-white transition-all duration-200 ${isSerching?'shadow-md shadow-black':''}`}>
                 Search
               </button>
             </div>
-            <div className="col-span-1 flex justify-center space-x-1">
-              <button className=" border border-black rounded-md w-8 p-1">
-                <img alt="" src="/start.svg"></img>
-              </button>
-              <button className=" border border-black rounded-md w-8 p-1">
-                <img alt="" src="/previous.svg"></img>
-              </button>
-              <button className=" border border-black rounded-md w-8 p-1">
-                <img alt="" src="/next.svg"></img>
-              </button>
-              <button className=" border border-black rounded-md w-8 p-1">
-                <img alt="" src="/end.svg"></img>
-              </button>
-            </div>
-            <div className="col-span-1 justify-end flex">
+            <div className="justify-end flex">
               <button 
               onClick={()=>{handleDelete(sid)}} 
-              className={`${isSerching || isNewState || isEditing || !state?'bg-gray-400 border-none text-gray-300 cursor-not-allowed pointer-events-none':''} py-1 px-3  rounded-md border border-black`} >
+              className={`${isSerching || isNewState || isEditing || !state?'bg-gray-400 border-none text-gray-200 cursor-not-allowed pointer-events-none':'bg-red-600 hover:bg-red-500 text-white'} py-1 px-3 w-20 rounded-md`} >
                 Delete
               </button>
             </div>
+
           </div>
 
           {/*------------------------------Table Search-----------------------------------*/}
-          <div className={`${isSerching ? 'block' : 'hidden'} w-[30rem] mx-auto rounded-md mt-8 h-80 border border-black`}>
+          <div className={`${isSerching ? 'block' : 'hidden'} w-[30rem] mx-auto rounded-md mt-8 h-[19rem] border-l-2 border-r-2 border-black `}>
 
             <div className="h-full flex flex-col justify-between">
 
               <div className="w-full">
-                <div className="flex border-b font-bold border-black">
+                <div className="flex border-b font-bold py-1 border-black bg-slate-700 text-white rounded-t-md">
                   <div className="w-2/3 pl-2 ">State Name</div>
                   <div className="w-1/3 ">State Code</div>
                 </div>
-                <div className="overflow-y-scroll h-[15.8rem]">
+                <div className="overflow-y-scroll h-[14.3rem] bg-white">
                   <table className="w-full">
                     <tbody>
                       {searchedStates && searchedStates.map((row, index) => (
@@ -291,19 +281,20 @@ const States = () => {
                 </div>
               </div>
 
-              <div className="py-1 border-t border-black">
+              <div className="py-1 border-t border-black bg-slate-700 rounded-b-md text-white">
 
-                <div className="w-full flex space-x-2 justify-center">
-
+                <div className="w-full flex justify-between px-4">
+                  <div className="flex space-x-2">
                   <div className="py-1 font-semibold"><p>Enter Name:</p></div>
                   <input
                     ref={searchRef}
                     placeholder="Search by state...."
-                    className="border border-black rounded-sm py-[2px] px-2" type="text"
+                    className="border border-black rounded-sm px-2 text-black" type="text"
                     value={searchedValue}
                     onChange={handleSearch}
-                  ></input>                
-                   <button onClick={()=>{searchSwitchOff()}} className="border border-black rounded-md px-2 py-[2px]">Cancel</button>
+                  ></input>   
+                  </div>             
+                   <button onClick={()=>{searchSwitchOff()}} className="bg-red-600 hover:bg-red-500 rounded-md w-20 px-2 py-[2px] font-semibold">Cancel</button>
 
                 </div>
 
@@ -313,7 +304,7 @@ const States = () => {
           </div>
             {/*------------------------------Table Search ends-----------------------------------*/}
 
-          <div className={`${isSerching?'hidden':'block'} relative mt-4 px-4 py-4 shadow-md w-full border border-black rounded-md`}>
+          <div className={`${isSerching?'hidden':'block'} relative mt-4 px-4 py-4 shadow-sm shadow-black w-full border border-black bg-white rounded-md`}>
             
             {showHidePopup ? (
               <div className="absolute w-full h-full flex justify-center pr-6 items-center">
@@ -363,17 +354,27 @@ const States = () => {
             </div>
 
             {isNewState || isEditing?(<div className="w-full">
-              <div className="w-1/5 inline-block">
-              <button 
-              onClick={()=>{addStateSwitchOff(); editStateSwitchOff(); cleanMessages();}} 
-              className="py-[2px] w-16 border border-black rounded-md">Cancel</button>
+
+              <div className="w-1/5 inline-block"></div>
+
+              <div className="w-2/4 inline-block">
+
+                <button 
+                  onClick={()=>{addStateSwitchOff(); editStateSwitchOff(); cleanMessages();}} 
+                  className="py-[0.15rem] mr-1 w-16 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-md">Cancel
+                </button>
+
+                <button
+                  ref={saveRef}
+                  onClick={isNewState ? () => { handleSaveOnAdd() } : () => { handleSaveOnEdit() }}
+                  className={`${( isNewState ?  
+                    (addEditStateAllowed ? ((newStateName === '' || newShortName === '') ? false : true) : false) 
+                  : (addEditSnameAllowed ? ((editStateName === '' || editShortName === '') ? false : true) : false)
+                  ) ? 'text-white bg-green-600 hover:bg-green-500 ' : 'bg-gray-400 border-none text-gray-200 cursor-not-allowed pointer-events-none'} py-[0.15rem] w-16 font-semibold rounded-md`}>
+                  Save
+                </button>
               </div>
-              <div className="w-1/3 inline-block">
-              <button 
-              ref={saveRef}
-              onClick={isNewState?()=>{handleSaveOnAdd()}:()=>{handleSaveOnEdit()}}
-              className={`${(addEditStateAllowed && addEditSnameAllowed) ? '':'bg-gray-400 border-none text-gray-200 cursor-not-allowed pointer-events-none'} py-[2px] w-16 border border-black rounded-md`}>Save</button>
-              </div>
+
             </div>):null}
             
           </div>
