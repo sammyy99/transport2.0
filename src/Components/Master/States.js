@@ -22,15 +22,21 @@ const States = () => {
 
   const [displayMessageState, setDisplayMessageState]=useState("") // to display State check messages
   const [displayMessageSname, setDisplayMessageSname]=useState("") // to display Sname check messages
-  const [addStateAllowed, setAddStateAllowed] = useState(null) // to allow newstate to be add or not
-  const [addSnameAllowed, setAddnameAllowed] = useState(null) // to allow newsname to be add or not
+  const [addEditStateAllowed, setAddEditStateAllowed] = useState(null) // to allow newstate to be add or not
+  const [addEditSnameAllowed, setAddEditnameAllowed] = useState(null) // to allow newsname to be add or not
+  const [popupMessage, setPopupMessage] = useState("") // to update popup message 
+  const [showHidePopup, setShowHidePopup] = useState(false) // to show or hide popup
+
+  const [alertbox,setAlertbox] = useState() // to set color of alertbox on true or false condition
   
   const inputRef = useRef(null)
   const searchRef = useRef(null)
+  const saveRef = useRef(null)
   //console.log("selected row index "+selectedRowIndex);
   //console.log("Searchedstate length "+searchedStates.length)
     console.log(sid)
     console.log(newStateName)
+    console.log(popupMessage)
 
  //---------------------------Hooks end--------------------------------
 
@@ -52,15 +58,47 @@ const States = () => {
  //--------------------------Add and Edit handling----------------------------
  const handleAddStateCheck = async (col)=>{
       const response = await axios.post(`http://localhost:5000/state/addEdit/check`,{localSid:0,name:newStateName,sname:newShortName,typeOf:col})
-      console.log(response.data)
-      response.data.msg && setDisplayMessageState(response.data.msg)
-      response.data.msg && setDisplayMessageSname(response.data.msg)
+      //console.log(response.data)
+      if (col==="state") {
+        response.data.msg && setDisplayMessageState(response.data.msg)
+        setAddEditStateAllowed(response.data.allowed)
+      } else if (col==="scode") {
+        response.data.msg && setDisplayMessageSname(response.data.msg)
+        setAddEditnameAllowed(response.data.allowed)
+        if(addEditStateAllowed && addEditSnameAllowed)saveRef.current.focus(); // to redirect to save button on loosing focus from scode field
+      }    
  }
  const handleEditStateCheck = async (col)=>{
       const response = await axios.post(`http://localhost:5000/state/addEdit/check`,{localSid:sid,name:editStateName,sname:editShortName,typeOf:col,edit:true})
-      console.log(response.data)
-      response.data.msg && setDisplayMessageState(response.data.msg)
-      response.data.msg && setDisplayMessageSname(response.data.msg)
+      //console.log(response.data)
+      if (col==="state") {
+        response.data.msg && setDisplayMessageState(response.data.msg)
+        setAddEditStateAllowed(response.data.allowed)
+      } else if (col==="scode") {
+        response.data.msg && setDisplayMessageSname(response.data.msg)
+        setAddEditnameAllowed(response.data.allowed)
+        if(addEditStateAllowed && addEditSnameAllowed)saveRef.current.focus(); // to redirect to save button on loosing focus from scode field
+      }
+ }
+ const cleanMessages = ()=>{
+    setDisplayMessageState('')
+    setDisplayMessageSname('')
+ }
+
+ const handleSaveOnAdd = async ()=>{
+    const response = await axios.post(`http://localhost:5000/state/add/save`,{state:newStateName,sname:newShortName})
+    setPopupMessage(response.data.msg)
+    addStateSwitchOff()
+    await response.data.alert?setAlertbox(true) : setAlertbox(false)  // setting alertbox status true or false so that i can change colors.
+    handlePopup()
+ }
+
+ const handleSaveOnEdit = async () =>{
+  const response = await axios.post(`http://localhost:5000/state/edit/save`,{state:editStateName,sname:editShortName,sid:sid})
+  setPopupMessage(response.data.msg);
+  editStateSwitchOff();
+  await response.data.alert?setAlertbox(true) : setAlertbox(false)  // setting alertbox status true or false so that i can change colors.
+  handlePopup();
  }
  //--------------------------Add and Edit handling----------------------------
 
@@ -84,35 +122,58 @@ const States = () => {
   //--------------------------------Switchs functions----------------------------------
   const addStateSwitchOn = ()=>{
       setIsNewState(true);
+      editStateSwitchOff();
+      searchSwitchOff();
       inputRef.current.focus();
   }
   const addStateSwitchOff = ()=>{
     setIsNewState(false);
     setNewStateName("")
     setNewShortName("")
+    cleanMessages();
   }
 
   const editStateSwitchOn = ()=>{
        setIsEditing(true)
+       addStateSwitchOff();
+       searchSwitchOff();
        setEditStateName(state.STATE)
        setEditShortName(state.SNAME)
+       inputRef.current.focus();
   }
   const editStateSwitchOff = ()=>{
        setIsEditing(false)
+       cleanMessages();
   }
 
   const searchSwitchOn = ()=>{
         setIsSearching(true);
+        addStateSwitchOff();
+        editStateSwitchOff()
         setSearchedValue("")
         setSelectedRowIndex(0)
   }
   const searchSwitchOff = ()=>{
         setIsSearching(false)
+        cleanMessages();
+  }
+
+  const popupSwitchOn = ()=>{
+        setShowHidePopup(true)
+  }
+  const popupSwitchOff = ()=>{
+        setShowHidePopup(false)
+  }
+  const handlePopup = ()=>{
+        popupSwitchOn()
+        setTimeout(()=>{
+          popupSwitchOff()
+        },2000)
   }
   //--------------------------------Switchs functions----------------------------------
 
 
-  //--------------------------------Arrows buttons functions----------------------------------
+  /*--------------------------------Arrows buttons functions----------------------------------
   const nextState = ()=>{
     if (stateID<=stateCount-1) {  
       setStateID(stateID+1)
@@ -134,12 +195,14 @@ const States = () => {
   const firstState=()=>{
     setStateID(1)
   }
-  //--------------------------------Arrows buttons functions Ends------------------------------
+  //--------------------------------Arrows buttons functions Ends------------------------------*/
 
   //--------------------------------Delete functions------------------------------
   const handleDelete = async (id)=>{
     const response = await axios.delete(`http://localhost:5000/state/delete/${id}`)
-    console.log(response.data)
+    setPopupMessage(response.data.msg)
+    await response.data.alert?setAlertbox(true) : setAlertbox(false)  // setting alertbox status true or false so that i can change colors.
+    handlePopup()
     }
   //--------------------------------Delete functions Ends-------------------------
 
@@ -173,13 +236,15 @@ const States = () => {
          searchSwitchOff()
          addStateSwitchOff()
          editStateSwitchOff()
+         cleanMessages()
+         popupSwitchOff()
       }
   };
      document.addEventListener('keydown',handleKeyDown)
      return ()=> {
       document.removeEventListener('keydown',handleKeyDown)
      }
-  },[stateID,searchedStates.length,selectedRowIndex,searchedStates,isSerching])
+  },[stateID,searchedStates.length,selectedRowIndex,searchedStates,isSerching,alertbox])
 
   return (
     <div className="w-full flex justify-center">
@@ -189,7 +254,7 @@ const States = () => {
         </div>
 
         <div className="py-4 px-8 border border-black rounded-md shadow-md shadow-black">
-          <div className="grid grid-cols-3 mt-8  font-semibold ">
+          <div className="grid grid-cols-3 mt-4  font-semibold ">
             <div className="col-span-1 flex  space-x-1">
               <button onClick={()=>{addStateSwitchOn()}} className={`py-1 px-3 border border-black rounded-md ${isNewState?"bg-gray-300":""}`}>
                 Add
@@ -202,43 +267,23 @@ const States = () => {
               </button>
             </div>
             <div className="col-span-1 flex justify-center space-x-1">
-              <button
-                onClick={() => {
-                  firstState();
-                }}
-                className=" border border-black rounded-md w-8 p-1"
-              >
+              <button className=" border border-black rounded-md w-8 p-1">
                 <img alt="" src="/start.svg"></img>
               </button>
-              <button
-                onClick={() => {
-                  previousState();
-                }}
-                className=" border border-black rounded-md w-8 p-1"
-              >
+              <button className=" border border-black rounded-md w-8 p-1">
                 <img alt="" src="/previous.svg"></img>
               </button>
-              <button
-                onClick={() => {
-                  nextState();
-                }}
-                className=" border border-black rounded-md w-8 p-1"
-              >
+              <button className=" border border-black rounded-md w-8 p-1">
                 <img alt="" src="/next.svg"></img>
               </button>
-              <button
-                onClick={() => {
-                  lastState();
-                }}
-                className=" border border-black rounded-md w-8 p-1"
-              >
+              <button className=" border border-black rounded-md w-8 p-1">
                 <img alt="" src="/end.svg"></img>
               </button>
             </div>
             <div className="col-span-1 justify-end flex">
               <button 
               onClick={()=>{handleDelete(sid)}} 
-              className="py-1 px-3  rounded-md border border-black ">
+              className={`${isSerching || isNewState || isEditing ?'bg-gray-400 border-none text-gray-200 cursor-not-allowed pointer-events-none':''} py-1 px-3  rounded-md border border-black`} >
                 Delete
               </button>
             </div>
@@ -294,41 +339,70 @@ const States = () => {
           </div>
             {/*------------------------------Table Search ends-----------------------------------*/}
 
-          <div className={`${isSerching?'hidden':'block'} mt-8 px-20 py-6 border border-black rounded-md grid grid-cols-8`}>
+          <div className={`${isSerching?'hidden':'block'} relative mt-4 px-4 py-4 shadow-md w-full border border-black rounded-md`}>
+            
+            {showHidePopup ? (
+              <div className="absolute w-full h-full flex justify-center pr-6 items-center">
+                <p className={alertbox ? 'bg-green-400 px-5 py-2 rounded-lg font-semibold' : 'bg-yellow-300  px-5 py-2 rounded-lg font-semibold'}>
+                  {popupMessage}
+                </p>
+              </div>
+            ) : null}
 
-            <div className="col-span-2 flex flex-col justify-center">
-              <div className="font-semibold mb-2">State Name :</div>
-              <div className="font-semibold mb-6">State Name :</div>
-              {isNewState||isEditing?(<button onClick={()=>{addStateSwitchOff(); editStateSwitchOff();}} className="py-[2px] w-16 border border-black rounded-md">Cancel</button>):(
-                /*<div className="font-semibold">Record :</div>*/null
-              )}
+            <div className="w-full">
+              <div className="w-1/5 inline-block">
+                <div className="font-semibold ">State Name :</div>
+              </div>
+              <div className="w-2/4 inline-block">
+                <input
+                  type="text"
+                  ref={inputRef}
+                  className="block border border-black rounded-sm px-2  w-full"
+                  value={isNewState ? newStateName : (isEditing ? editStateName : (!state ? "" : state.STATE))}
+                  readOnly={!isNewState && !isEditing}
+                  onChange={(e) => isNewState ? setNewStateName(e.target.value.toUpperCase()) : (isEditing ? setEditStateName(e.target.value.toUpperCase()) : null)}
+                  onBlur={isNewState && (newStateName !== '') ? () => { handleAddStateCheck("state") } : (isEditing ? () => { handleEditStateCheck("state") } : null)}
+                ></input>
+              </div>
+              <div className="inline-block">
+                <div className={`${addEditStateAllowed?'text-green-600 pl-2 text-sm':'text-red-600 pl-2 text-sm'}`}>{displayMessageState}</div>
+              </div>
             </div>
-            <div className="col-span-5 flex flex-col justify-center">
+
+            <div className="w-full my-2">
+              <div className="w-1/5 inline-block">
+                <div className="font-semibold ">State Code :</div>
+              </div>
+              <div className="w-2/4 inline-block">
               <input
                 type="text"
-                ref={inputRef}
-                className="block border border-black rounded-sm px-2 mb-2 w-full"
-                value={isNewState?newStateName:(isEditing?editStateName:(!state ? "" : state.STATE))}
-                readOnly={!isNewState && !isEditing}
-                onChange={(e)=> isNewState?setNewStateName(e.target.value.toUpperCase()):(isEditing?setEditStateName(e.target.value.toUpperCase()):null)}
-                onBlur={isNewState && (newStateName !== '')?()=>{handleAddStateCheck("state")}:(isEditing?()=>{handleEditStateCheck("state")}:null)}
-              ></input>
-              <input
-                type="text"
-                className="block border border-black rounded-sm px-2 mb-6 w-full"
+                className="block border border-black rounded-sm px-2  w-full"
                 value={isNewState?newShortName:(isEditing?editShortName:(!state ? "" : state.SNAME))}
                 readOnly={!isNewState && !isEditing}
                 onChange={(e)=>isNewState?setNewShortName(e.target.value.toUpperCase()):(isEditing?setEditShortName(e.target.value.toUpperCase()):null)}
                 onBlur={isNewState && (newShortName !== '')?()=>{handleAddStateCheck("scode")}:(isEditing?()=>{handleEditStateCheck("scode")}:null)}
               ></input>
-              { isNewState || isEditing? (<button className="py-[2px] mb-[0.32rem] w-16 border border-black rounded-md">Save</button>) : (
-                /*<div className="font-semibold border px-2 border-black w-1/4">
-                {stateID}/{stateCount}
-              </div>*/null)}
+              </div>
+              <div className="inline-block">
+                <div className={`${addEditSnameAllowed?'text-green-600 pl-2 text-sm':'text-red-600 pl-2 text-sm'}`}>{displayMessageSname}</div>
+              </div>
             </div>
+
+            {isNewState || isEditing?(<div className="w-full">
+              <div className="w-1/5 inline-block">
+              <button 
+              onClick={()=>{addStateSwitchOff(); editStateSwitchOff(); cleanMessages();}} 
+              className="py-[2px] w-16 border border-black rounded-md">Cancel</button>
+              </div>
+              <div className="w-1/3 inline-block">
+              <button 
+              ref={saveRef}
+              onClick={isNewState?()=>{handleSaveOnAdd()}:()=>{handleSaveOnEdit()}}
+              className={`${(addEditStateAllowed && addEditSnameAllowed) ? '':'bg-gray-400 border-none text-gray-200 cursor-not-allowed pointer-events-none'} py-[2px] w-16 border border-black rounded-md`}>Save</button>
+              </div>
+            </div>):null}
             
           </div>
-
 
         </div>
       </div>

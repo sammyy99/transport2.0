@@ -69,26 +69,33 @@ app.get("/state/searchState/:search",async (req,res)=>{
     const searchedState = req.params.search
     //console.log(searchedState)
     try {
-        const dbStates = await sql.query(`SELECT * FROM SSTATE WHERE STATE LIKE '%${searchedState}%' ORDER BY STATE`)
-        const dbdata = await dbStates.recordset
-        res.json(dbdata)
+        if (searchedState == null) {
+            const dbStates = await sql.query(`SELECT * FROM SSTATE ORDER BY STATE`)
+            const dbdata = await dbStates.recordset
+            res.json(dbdata)
+        } else {
+            const dbStates = await sql.query(`SELECT * FROM SSTATE WHERE STATE LIKE '%${searchedState}%' ORDER BY STATE`)
+            const dbdata = await dbStates.recordset
+            res.json(dbdata)
+        }
+        
     } catch (error) {
         res.status(500).json({message:"Internal server error (Getting searched states from db failed)",err:error})
         console.log(error)
     }
 })
 
-app.delete("/state/delete/:id",async (req,res)=>{
+app.delete("/state/delete/:id",async (req,res)=>{  // for delete
     const sid = req.params.id
     console.log(sid)
     try {
         const dbDistrict = await sql.query(`SELECT DISTRICT from SDIST WHERE SID =${sid}`)
         console.log(dbDistrict.recordset)
         if (dbDistrict.recordset.length>0) {
-            res.json({msg:"District exist. State cannot be deleted."})
+            res.json({msg:"District exist. State cannot be deleted.",alert:false})
         } else {
-            await sql.query(`DELETE FROM example WHERE SID = ${sid}`)
-            res.json({msg:"Successfully deleted"})
+            await sql.query(`DELETE FROM SSTATE WHERE SID = ${sid}`)
+            res.json({msg:"Successfully deleted",alert:true})
         }
     } catch (error) {
         res.status(500).json({message:"Internal server error (Getting searched states from db failed)",err:error})
@@ -106,9 +113,9 @@ app.post("/state/addEdit/check",async (req,res)=>{
                 const dbresponse = await await sql.query(`SELECT STATE FROM SSTATE WHERE STATE = '${data.name}' AND SID != ${data.localSid}`)
                 const dbdata = await dbresponse.recordset
                 if (dbdata.length>0) {
-                    res.json({msgState:"State already exist",allowed:false})
+                    res.json({msg:"🚫 State already exist",allowed:false})
                 } else {
-                    res.json({msgState:"Valid State",allowed:true})
+                    res.json({msg:"✅ Valid State",allowed:true})
                 }
               } catch (error) {
                 res.status(500).json({message:"Internal server error (Error in checking this state name)",err:error})
@@ -120,9 +127,9 @@ app.post("/state/addEdit/check",async (req,res)=>{
                 const dbresponse = await await sql.query(`SELECT SNAME FROM SSTATE WHERE SNAME = '${data.sname}' AND SID != ${data.localSid}`)
                 const dbdata = await dbresponse.recordset
                 if (dbdata.length>0) {
-                    res.json({msgState:"StateCode already exist",allowed:false})
+                    res.json({msg:"🚫 Statecode already exist",allowed:false})
                 } else {
-                    res.json({msgState:"Valid StateCode",allowed:true})
+                    res.json({msg:"✅ Valid Statecode",allowed:true})
                 }
               } catch (error) {
                 res.status(500).json({message:"Internal server error (Error in checking this state code)",err:error})
@@ -136,6 +143,39 @@ app.post("/state/addEdit/check",async (req,res)=>{
        
 })
 
+app.post('/state/add/save',async(req,res)=>{
+     try {
+        const body = req.body
+        const dbresponse = await sql.query(`INSERT INTO SSTATE (STATE, SNAME, SID)
+                                            OUTPUT INSERTED.ID
+                                             VALUES ('${body.state}', '${body.sname}', (SELECT MAX(SID) + 1 FROM SSTATE))`);
+        if (dbresponse.recordset[0].ID !== 0) {
+            res.status(200).json({msg:"✅ State added successfully",alert:true})
+        } else {
+            res.status(200).json({msg:"❕ Something went wrong",alert:false})
+        }
+     } catch (error) {
+        res.status(500).json({message:"Internal server error (Error in saving this state data)",err:error})
+        console.log(error)
+     }
+})
+
+app.post('/state/edit/save',async(req,res)=>{
+    try {
+        const body = req.body
+        const dbresponse = await sql.query(`UPDATE SSTATE 
+                                            SET STATE = '${body.state}', SNAME = '${body.sname}' 
+                                            WHERE SID = ${body.sid}`);
+        if (dbresponse.rowsAffected[0] > 0) {
+            res.status(200).json({ msg: "✅ State updated successfully",alert:true});
+        } else {
+            res.status(200).json({ msg: "❕ No records were updated",alert:false});
+        } 
+    } catch (error) {
+        res.status(500).json({message:"Internal server error (Error in saving this state data)",err:error})
+        console.log(error)
+    }
+})
 
 //---------------------------------------------------------------States-----------------------------------------------------------------------
 
