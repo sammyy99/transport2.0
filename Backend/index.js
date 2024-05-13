@@ -1,4 +1,4 @@
-import express, { json } from "express"
+import express from "express"
 import sql from "mssql"
 import cors from 'cors'
 
@@ -52,13 +52,10 @@ app.post("/login",async (req,res)=>{  // user table user fetch
 //---------------------------------------------------------------Login-----------------------------------------------------------------------
 
 //---------------------------------------------------------------States-----------------------------------------------------------------------
-app.get("/state/:id",async (req,res)=>{
-        const id =await req.params.id
+app.get("/allstate",async (req,res)=>{
     try {
-        const dbState = await sql.query(`Select * from SSTATE where SID =${id}`);
-        const dbCount = await sql.query(`select count(*) as record_count from SSTATE`)
-        const dbData = {state:dbState.recordset, count: dbCount.recordset}
-        res.json(dbData)
+        const dbresponse = await sql.query(`Select * from SSTATE`);
+        res.json(dbresponse.recordset)
     } catch (error) {
         res.status(500).json({message:"Internal server error (Getting states from db failed)",err:error})
         console.log(error)
@@ -69,7 +66,7 @@ app.get("/state/searchState/:search",async (req,res)=>{
     const searchedState = req.params.search
     //console.log(searchedState)
     try {
-        if (searchedState == null) {
+        if (searchedState === '') {
             const dbStates = await sql.query(`SELECT * FROM SSTATE ORDER BY STATE`)
             const dbdata = await dbStates.recordset
             res.json(dbdata)
@@ -92,10 +89,10 @@ app.delete("/state/delete/:id",async (req,res)=>{  // for delete
         const dbDistrict = await sql.query(`SELECT DISTRICT from SDIST WHERE SID =${sid}`)
         console.log(dbDistrict.recordset)
         if (dbDistrict.recordset.length>0) {
-            res.json({msg:"District exist. State cannot be deleted.",alert:false})
+            res.json({msg:"🚫 District exist. State cannot be deleted.",alert:false})
         } else {
-            await sql.query(`DELETE FROM SSTATE WHERE SID = ${sid}`)
-            res.json({msg:"Successfully deleted",alert:true})
+            await sql.query(`DELETE FROM EXAMPLE WHERE SID = ${sid}`)
+            res.json({msg:"✅ Successfully deleted",alert:true})
         }
     } catch (error) {
         res.status(500).json({message:"Internal server error (Getting searched states from db failed)",err:error})
@@ -110,7 +107,7 @@ app.post("/state/addEdit/check",async (req,res)=>{
         console.log(data)
         if (data.typeOf === 'state') {
             try {
-                const dbresponse = await await sql.query(`SELECT STATE FROM SSTATE WHERE STATE = '${data.name}' AND SID != ${data.localSid}`)
+                const dbresponse = await sql.query(`SELECT STATE FROM SSTATE WHERE STATE = '${data.name}' AND SID != ${data.localSid}`)
                 const dbdata = await dbresponse.recordset
                 if (dbdata.length>0) {
                     res.json({msg:"🚫 State already exist",allowed:false})
@@ -124,7 +121,7 @@ app.post("/state/addEdit/check",async (req,res)=>{
 
         }else if (data.typeOf === 'scode') {
             try {
-                const dbresponse = await await sql.query(`SELECT SNAME FROM SSTATE WHERE SNAME = '${data.sname}' AND SID != ${data.localSid}`)
+                const dbresponse = await sql.query(`SELECT SNAME FROM SSTATE WHERE SNAME = '${data.sname}' AND SID != ${data.localSid}`)
                 const dbdata = await dbresponse.recordset
                 if (dbdata.length>0) {
                     res.json({msg:"🚫 Statecode already exist",allowed:false})

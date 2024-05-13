@@ -6,13 +6,12 @@ const States = () => {
   const [state,setState]=useState() // main state data coming in state
   const [searchedStates, setSearchedStates] = useState([]) // searched states will come inside here to render states in search table
   const [searchedValue,setSearchedValue] = useState('') // used this state variable to store searched value from table inputbox and to send value to backend
-  const [stateCount, setStateCount]=useState() // this count is actually total count getting from db records 
-  const [stateID, setStateID] = useState(1) // state id for managing record column only 
+ 
   const [sid, setSid] = useState()  // we receive sid from db data here
   const [isNewState, setIsNewState] = useState(false) // used as switch of add and then further conditions of textbox
   const [isEditing, setIsEditing]= useState(false) // used as switch of edit and then further conditions of textbox
-
   const [isSerching, setIsSearching]= useState(false)// used as switch for displaying search table
+
   const [selectedRowIndex, setSelectedRowIndex] = useState(0); // used for navigating inside table
 
   const [newStateName, setNewStateName] = useState('') // used for storing and displaying value of new state we typing and adding ---- with out using this typing not possible
@@ -41,12 +40,9 @@ const States = () => {
  //---------------------------Hooks end--------------------------------
 
  //---------------------------Fetch Functions---------------------------
-  const getState = async (id)=>{
-      const response = await axios.get(`http://localhost:5000/state/${id}`)
-      //console.log(response.data)
-      setState(response.data.state[0])
-      setSid(response.data.state[0].SID)
-      setStateCount(response.data.count[0].record_count)
+  const getState = async ()=>{
+      const response = await axios.get(`http://localhost:5000/allstate`)
+       setSearchedStates(response.data)
   }
 
   const getSearchedStates =async (value)=>{
@@ -104,15 +100,14 @@ const States = () => {
 
   //--------------------------------Search Handling Functions----------------------
   const handleSearch = (e) => {
-    const enteredValue = e.target.value.toUpperCase();
-    setSearchedValue(enteredValue)
-    enteredValue && getSearchedStates(enteredValue)
+    setSearchedValue(e.target.value.toUpperCase())
+    searchedValue !==''? getSearchedStates(searchedValue):getState()  // if is there any searched value by typing then getSearchedStates() otherwise getstate()
     setSelectedRowIndex(0); // setting focused row again first one
   }
 
   const handleRecordSelection = (row,index)=>{
     setSelectedRowIndex(index) // this is when i click once this handleRecordSelection gets executed so that even on click i get blue highlighted row
-    setStateID(row.SID)
+    setState(row) 
     setSid(row.SID)
     console.log('SID '+row.SID)
     console.log('Name '+row.STATE)
@@ -148,9 +143,9 @@ const States = () => {
 
   const searchSwitchOn = ()=>{
         setIsSearching(true);
+        setSearchedValue('')             // to clear searched value
         addStateSwitchOff();
         editStateSwitchOff()
-        setSearchedValue("")
         setSelectedRowIndex(0)
   }
   const searchSwitchOff = ()=>{
@@ -165,41 +160,19 @@ const States = () => {
         setShowHidePopup(false)
   }
   const handlePopup = ()=>{
-        popupSwitchOn()
+          popupSwitchOn()
         setTimeout(()=>{
           popupSwitchOff()
-        },2000)
+        },3000)
   }
   //--------------------------------Switchs functions----------------------------------
 
 
-  /*--------------------------------Arrows buttons functions----------------------------------
-  const nextState = ()=>{
-    if (stateID<=stateCount-1) {  
-      setStateID(stateID+1)
-    } else {   
-    }       
-  }
-
-  const previousState = ()=>{
-    if (stateID>=2) {
-      setStateID(stateID-1)
-    } else {   
-    }       
-  }
-
-  const lastState=()=>{
-    setStateID(stateCount);
-  }
-
-  const firstState=()=>{
-    setStateID(1)
-  }
-  //--------------------------------Arrows buttons functions Ends------------------------------*/
-
   //--------------------------------Delete functions------------------------------
   const handleDelete = async (id)=>{
-    const response = await axios.delete(`http://localhost:5000/state/delete/${id}`)
+    const delID = id
+    setState(); // setting this so that on click on delete that row gets removed from there and user have to select new row
+    const response = await axios.delete(`http://localhost:5000/state/delete/${delID}`)
     setPopupMessage(response.data.msg)
     await response.data.alert?setAlertbox(true) : setAlertbox(false)  // setting alertbox status true or false so that i can change colors.
     handlePopup()
@@ -209,8 +182,6 @@ const States = () => {
 
   useEffect(()=>{
     
-      getState(stateID);
-
      if (isSerching) {
       searchRef.current?.focus();
   };
@@ -244,7 +215,7 @@ const States = () => {
      return ()=> {
       document.removeEventListener('keydown',handleKeyDown)
      }
-  },[stateID,searchedStates.length,selectedRowIndex,searchedStates,isSerching,alertbox])
+  },[searchedStates.length,selectedRowIndex,searchedStates])
 
   return (
     <div className="w-full flex justify-center">
@@ -256,13 +227,16 @@ const States = () => {
         <div className="py-4 px-8 border border-black rounded-md shadow-md shadow-black">
           <div className="grid grid-cols-3 mt-4  font-semibold ">
             <div className="col-span-1 flex  space-x-1">
-              <button onClick={()=>{addStateSwitchOn()}} className={`py-1 px-3 border border-black rounded-md ${isNewState?"bg-gray-300":""}`}>
+              <button onClick={()=>{addStateSwitchOn()}} 
+              className={`py-1 px-3 border border-black rounded-md ${isNewState?"bg-gray-300":""}`}>
                 Add
               </button>
-              <button onClick={()=>editStateSwitchOn()} className={`py-1 px-3 border border-black rounded-md ${isEditing?"bg-gray-300":""}`}>
+              <button onClick={()=>editStateSwitchOn()} 
+              className={`py-1 px-3 border border-black rounded-md ${isEditing?"bg-gray-300":""} ${!state?'bg-gray-400 border-none text-gray-300 cursor-not-allowed pointer-events-none':''}`}>
                 Edit
               </button>
-              <button onClick={()=>{searchSwitchOn()}} className="py-1 px-3 border border-black rounded-md">
+              <button onClick={()=>{getState();searchSwitchOn();}} 
+              className="py-1 px-3 border border-black rounded-md">
                 Search
               </button>
             </div>
@@ -283,7 +257,7 @@ const States = () => {
             <div className="col-span-1 justify-end flex">
               <button 
               onClick={()=>{handleDelete(sid)}} 
-              className={`${isSerching || isNewState || isEditing ?'bg-gray-400 border-none text-gray-200 cursor-not-allowed pointer-events-none':''} py-1 px-3  rounded-md border border-black`} >
+              className={`${isSerching || isNewState || isEditing || !state?'bg-gray-400 border-none text-gray-300 cursor-not-allowed pointer-events-none':''} py-1 px-3  rounded-md border border-black`} >
                 Delete
               </button>
             </div>
@@ -343,7 +317,7 @@ const States = () => {
             
             {showHidePopup ? (
               <div className="absolute w-full h-full flex justify-center pr-6 items-center">
-                <p className={alertbox ? 'bg-green-400 px-5 py-2 rounded-lg font-semibold' : 'bg-yellow-300  px-5 py-2 rounded-lg font-semibold'}>
+                <p className={alertbox ? 'bg-green-400 px-5 py-2 rounded-lg font-semibold' : 'bg-red-400 px-5 py-2 rounded-lg font-semibold'}>
                   {popupMessage}
                 </p>
               </div>
@@ -358,7 +332,7 @@ const States = () => {
                   type="text"
                   ref={inputRef}
                   className="block border border-black rounded-sm px-2  w-full"
-                  value={isNewState ? newStateName : (isEditing ? editStateName : (!state ? "" : state.STATE))}
+                  value={isNewState ? newStateName : (isEditing ? editStateName : (state ? state.STATE:''))}
                   readOnly={!isNewState && !isEditing}
                   onChange={(e) => isNewState ? setNewStateName(e.target.value.toUpperCase()) : (isEditing ? setEditStateName(e.target.value.toUpperCase()) : null)}
                   onBlur={isNewState && (newStateName !== '') ? () => { handleAddStateCheck("state") } : (isEditing ? () => { handleEditStateCheck("state") } : null)}
@@ -377,7 +351,7 @@ const States = () => {
               <input
                 type="text"
                 className="block border border-black rounded-sm px-2  w-full"
-                value={isNewState?newShortName:(isEditing?editShortName:(!state ? "" : state.SNAME))}
+                value={isNewState ? newShortName : (isEditing ? editShortName : (state ? state.SNAME:''))}
                 readOnly={!isNewState && !isEditing}
                 onChange={(e)=>isNewState?setNewShortName(e.target.value.toUpperCase()):(isEditing?setEditShortName(e.target.value.toUpperCase()):null)}
                 onBlur={isNewState && (newShortName !== '')?()=>{handleAddStateCheck("scode")}:(isEditing?()=>{handleEditStateCheck("scode")}:null)}
