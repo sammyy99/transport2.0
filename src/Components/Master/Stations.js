@@ -13,8 +13,8 @@ const Stations = () => {
   const [isEditing, setIsEditing]= useState(false) // used as switch of edit 
   const [isSerching, setIsSearching]= useState(false)// used as switch for search
 
-  const [newStation, setNewStation] = useState() // updating value of entered new state here
-  const [editStation, setEditStation] = useState() // updating value of entered new state here
+  const [newStation, setNewStation] = useState('') // updating value of entered new state here
+  const [editStation, setEditStation] = useState('') // updating value of entered new state here
 
   const [selectedRowIndex, setSelectedRowIndex] = useState(0) // will be used for table record navigation
   const [searchedValue, setSearchedValue] = useState('')  // Will be used to store the value entered in search box
@@ -77,9 +77,9 @@ const Stations = () => {
   const handleStateSelection = (e)=>{  // to select the SID value from dropbox
     setSid(e.target.value);
     setSelectedState(e.target.options[e.target.selectedIndex].text); // Update selectedState
-    setStateStations([])
-    setSelectedStation()  // emptying station when selecting state so that previous state dosent exist for any confusion
-    setZid() // clearing any selected ZID so that on every change of state stations gets cleared
+    !isEditing && setStateStations([])
+    !isEditing && setSelectedStation()  // emptying station when selecting state so that previous state dosent exist for any confusion
+    !isEditing && setZid() // clearing any selected ZID so that on every change of state stations gets cleared
   }
   const handleStationSelection = (e)=>{  // to select the ZID value from dropbox
     setZid(e.target.value);
@@ -257,7 +257,7 @@ const Stations = () => {
                 <div className='w-2/4 inline-block'>
                   <select className='w-full border py-1 px-3 border-black rounded-md'
                     onChange={handleStationSelection}
-                    onFocus={ sid?() => { getStateStations(sid)}:null}
+                    onFocus={!isEditing && sid?() => { getStateStations(sid)}:null}
                     value={selectedStation} // Set value to selectedStation
                   >
                     <option value={''}>{selectedStation?selectedStation:'Select Station'}</option>
@@ -296,7 +296,8 @@ const Stations = () => {
                   > Cancel
                   </button>
 
-                  <button className={`py-[0.15rem] mr-1 w-16 bg-green-600 hover:bg-green-500 text-white  rounded-md`}
+                  <button className={`${isAdding?(newStation === ''?'bg-gray-400 text-gray-600':'bg-green-600 hover:bg-green-500 text-white'):(isEditing?(editStation===''?'bg-gray-400 text-gray-600':'bg-green-600 hover:bg-green-500 text-white'):'bg-gray-400 text-gray-600')} py-[0.15rem] mr-1 w-16   rounded-md`}
+                  disabled={isAdding?(newStation === ''?true:false):(isEditing?(editStation===''?true:false):true)}
                   onClick={()=>{handleAdd()}}
                   > Save
                   </button>
