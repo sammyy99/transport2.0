@@ -1,95 +1,300 @@
-import React, { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import React, { useEffect, useRef, useState } from 'react'
+import axios from 'axios'
 
 const Stations = () => {
-  const [stations, setStations] = useState();
-  const [stationsList, setStationsList] = useState()
-  const [showAddRow, setShowAddRow] = useState(false)
 
-  const search = useRef()
+  const [states, setStates] = useState();  // Getting all states along with SID 
+  const [sid, setSid] = useState();  // will update the selected SID from dropbox here
 
-  const addRow = ()=>{
-    setShowAddRow(true)
-  } 
+  const [stateStations, setStateStations] = useState(); // Getting all states according to state
+  const [zid, setZid] = useState(); // will update the ZID of selected distirct here
 
-  const hideAddRow = ()=>{
-    setShowAddRow(!showAddRow)
+  const [isAdding, setIsAdding] = useState(false) // used as switch of add 
+  const [isEditing, setIsEditing]= useState(false) // used as switch of edit 
+  const [isSerching, setIsSearching]= useState(false)// used as switch for search
+
+  const [selectedRowIndex, setSelectedRowIndex] = useState(0) // will be used for table record navigation
+  const [searchedValue, setSearchedValue] = useState('')  // Will be used to store the value entered in search box
+  const [searchedStations, setSearchedStations] = useState([])// searched District will be stored in this
+
+  const [selectedStationRecord, setSelectedStationRecord] = useState() // selected Station full record in here
+  const [selectedState, setSelectedState] = useState()  // will be stored Selected State
+  const [selectedStation, setSelectedStation] = useState()  // will be stored Selected Station
+
+  const searchRef = useRef()
+
+  console.log('SID '+sid)
+  console.log('ZID '+zid)
+  console.log(selectedStationRecord)
+
+
+  const getStates = async () => {   // Get all the states
+    const response = await axios.get('http://localhost:5000/stations/allstates')
+    if (response.status === 200) {
+      setStates(response.data)
+    } else {
+      console.log(response.data.message)
+    }
   }
 
-  const getStates = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/stations");
-      setStations(response.data);
-      setStationsList(response.data);
-    } catch (error) {
-      console.log("Error in fetching data " + error);
-    }
-  };
+  const getStateStations = async (id)=>{  //Get all the stations according to state
+   const response = await axios.get(`http://localhost:5000/stations/statestations/${id}`)
+   if (response.status === 200) {
+      setStateStations(response.data)
+   } else {
+      console.log(response.data.message)
+   }
+  }
 
-  const searchedStations = ()=>{
-    const searchedList = stations.filter((result)=>{
-      return result.DISTRICT.toLowerCase().includes(search.current.value.toLowerCase())
-    })
-    setStationsList(searchedList)
+  const getAllStations = async ()=>{  // Get all stations 
+   const response = await axios.get('http://localhost:5000/stations/allstations')
+   if (response.status === 200) {
+       setSearchedStations(response.data)
+   } else {
+      console.log(response.data.message)
+   }
+  }
+  
+  const getSearchedStations = async (value)=>{  // Get the searched Stations
+    const response = await axios.get(`http://localhost:5000/stations/searched/${value}`)
+    if (response.status === 200) {
+      setSearchedStations(response.data)
+    } else {
+      console.log(response.data.message)
+    }
+  }
+
+  const handleStateSelection = (e)=>{  // to select the SID value from dropbox
+    setSid(e.target.value);
+    setStateStations([])
+    setZid() // clearing any selected ZID so that on every change of state stations gets cleared
+  }
+  const handleStationSelection = (e)=>{  // to select the ZID value from dropbox
+    setZid(e.target.value);
+  }
+
+  const handleRecordSelection = (row,index)=>{  // handling slection fo record with enter as well as click
+    setSelectedRowIndex(index) // this is when i click once this handleRecordSelection gets executed so that even on click i get blue highlighted row
+    setSelectedStationRecord(row) 
+    setZid(row.ZID)
+  }
+
+  const handleSearch = (e)=>{  // handling serach input 
+     setSearchedValue(e.target.value.toUpperCase());
+     searchedValue === '' ? getAllStations():getSearchedStations(searchedValue)
+     setSelectedRowIndex(0)
+  }
+
+  const addSwitchOn = ()=>{
+     setIsAdding(true)
+     setIsEditing(false)
+     setIsSearching(false) 
+  }
+  const addSwitchOff = ()=>{
+    setIsAdding(false)
+  }
+  const editSwitchOn = ()=>{
+    setIsEditing(true)
+    setIsAdding(false)
+    setIsSearching(false)
+  }
+  const editSwitchOff = ()=>{
+    setIsEditing(false)
+  }
+  const searchSwitchOn = ()=>{
+    setIsSearching(true)
+    setIsAdding(false)
+    setIsEditing(false)
+    setSearchedValue('')
+    setSelectedRowIndex(0)
+  }
+  const searchSwitchOff = ()=>{
+    setIsSearching(false)
   }
 
   useEffect(() => {
     getStates();
-  }, []);
+
+    if (isSerching) {
+      searchRef.current?.focus();
+  };
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'ArrowUp') {
+        setSelectedRowIndex((prevIndex) => {
+          return prevIndex > 0 ? prevIndex - 1 : 0;
+        });
+      } else if (event.key === 'ArrowDown') {
+        setSelectedRowIndex((prevIndex) => {
+          return prevIndex < searchedStations.length - 1 ? prevIndex + 1 : searchedStations.length - 1;
+        });
+      } else if(event.key === 'Enter'){
+        if (searchedStations.length > 0 && selectedRowIndex >= 0) {
+          const selectedRow = searchedStations[selectedRowIndex];
+          if (selectedRow) {
+              handleRecordSelection(selectedRow);
+              searchSwitchOff()
+          }
+      }
+      } else if (event.key === 'Escape') {
+         searchSwitchOff()
+         addSwitchOff()
+         editSwitchOff()
+         //cleanMessages()
+         //popupSwitchOff()
+      }
+  };
+     document.addEventListener('keydown',handleKeyDown)
+     return ()=> {
+      document.removeEventListener('keydown',handleKeyDown)
+     }
+  }, [sid, stateStations, searchedValue, searchedStations, isSerching, selectedRowIndex, selectedStationRecord])
 
 
   return (
-    <div className="w-[80%] h-full mx-auto">
-      <div className="text-2xl text-center my-4 py-2 font-bold">Stations</div>
+    <div className='w-full flex justify-center font-serif'>
+      <div className='w-[700px]'>
 
-      <div className="h-[65%] text-center overflow-y-auto border border-black shadow-md shadow-gray-600 rounded-md">
-        <div className="flex sticky top-0 z-10 w-full border-b border-black bg-slate-600 text-white py-1">
-          <div className="w-[40%] my-auto">Search</div>
-          <div className="w-[40%] px-16">
-            <input
-              ref={search}
-              onChange={()=>{searchedStations()}}
-              className="w-full px-4 py-1 rounded-md text-black"
-              type="text"
-              placeholder="Search by District..."
-            ></input>
-          </div>
-          <div className="w-[20%]">
-            <button onClick={()=>{addRow()}} className="mx-auto px-3 py-1 rounded-md bg-green-600">
-              Add +
-            </button>
-          </div>
-        </div>
+        <div className='text-center font-bold text-2xl my-4'>Stations Details</div>
 
-        <div className="flex sticky top-[2.55rem] z-10 w-full border-b border-black bg-slate-600 text-white py-2">
-          <div className="w-[40%]">District</div>
-          <div className="w-[40%]">State</div>
-          <div className="w-[20%]">Edit</div>
-        </div>
-        
-        <div className={`${showAddRow?'block':'hidden'} flex sticky top-[5.10rem] py-1 bg-slate-200`}>
-          <div className="w-[40%] px-16"><input className="w-full border border-gray-500 py-1 px-4 rounded-md text-center" type="text" placeholder="Enter State Name.."></input></div>
-          <div className="w-[40%] px-16"><input className="w-full border border-gray-500 py-1 px-4 rounded-md text-center" type="text" placeholder="Enter State Code.."></input></div>
-          <div className="w-[20%] flex justify-center space-x-2">
-            <img className="w-8 hover:cursor-pointer bg-white rounded-md" alt="" src='/tick.svg'></img>
-            <img onClick={()=>{hideAddRow()}} className="w-8 hover:cursor-pointer bg-white rounded-md" alt="" src='/cross.svg'></img>
-          </div>
-        </div>
+        <div className='w-full py-4 px-8 border border-black rounded-md shadow-md shadow-black bg-slate-200'>
 
-        <div className="py-2">
-          {!stationsList?null:(stationsList.map((row) => {
-            return (
-              <div key={row.ZID} className="flex w-full border-b py-1">
-                <div className="w-[40%]">{row.DISTRICT}</div>
-                <div className="w-[40%]">{row.STATE}</div>
-                <div className="w-[20%]"></div>
+          <div className='w-full flex justify-between font-bold'>
+            <div className='flex space-x-1'>
+              <button className={`py-1 px-3 w-20 bg-green-600 text-white rounded-md transition-all duration-200 hover:bg-green-500`}
+                onClick={addSwitchOn}
+              >Add+</button>
+              <button className={`py-1 px-3 w-20 bg-blue-600 text-white rounded-md transition-all duration-200 hover:bg-blue-500`}
+                onClick={editSwitchOn}
+              >Edit</button>
+              <button className={`py-1 px-3 w-20 bg-yellow-500 text-white rounded-md transition-all duration-200 hover:bg-yellow-400`}
+                onClick={()=>{searchSwitchOn(); getAllStations();}}
+              >Search</button>
+            </div>
+            <div className='flex justify-end'>
+              <button className={`py-1 px-3 w-20 bg-red-600 text-white rounded-md transition-all duration-200 hover:bg-red-500`}>Delete</button>
+            </div>
+          </div>
+
+          <div className={`${isSerching?'hidden':'block'} w-full mt-4 py-4 px-8 border border-black rounded-md shadow-sm shadow-black bg-white font-bold`}>
+            <div className='w-full flex'>
+              <div className='w-1/6 inline-block py-1'>
+                State :
               </div>
-            );
-          }))}
+              <div className='w-2/4 inline-block'>
+                <select className='w-full border py-1 px-3 border-black rounded-md'
+                  onChange={handleStateSelection}
+                >
+                  <option value={''}>Select State</option>
+                  {states && states.map((state) => {
+                    return (<option key={state.SID} value={state.SID}>{state.STATE}</option>)
+                  })}
+                </select>
+              </div>
+            </div>
+
+            {isAdding || isEditing ? null : (
+              <div className='w-full flex mt-2'>
+                <div className='w-1/6 inline-block py-1'>
+                  Stations :
+                </div>
+                <div className='w-2/4 inline-block'>
+                  <select className='w-full border py-1 px-3 border-black rounded-md'
+                    onChange={handleStationSelection}
+                    onFocus={() => { getStateStations(sid); }}
+                  >
+                    <option value={''}>Select Station</option>
+                    {stateStations && stateStations.map((station) => {
+                      return (<option key={station.ZID} value={station.ZID}>{station.DISTRICT}</option>)
+                    })}
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {isAdding || isEditing ? (
+              <div className='w-full flex mt-2'>
+                <div className='w-1/6 inline-block py-[0.08rem]'>
+                  Stations :
+                </div>
+                <div className='w-2/4 inline-block'>
+                  <input className='w-full border py-[0.08rem] px-3 border-black rounded-md'
+                  >
+                  </input>
+                </div>
+              </div>
+            ) : null}
+
+            {isAdding || isEditing ? (
+              <div className="w-full mt-2">
+                <div className="w-1/6 inline-block"></div>
+
+                <div className="w-2/4 inline-block">
+
+                  <button className="py-[0.15rem] mr-1 w-16 bg-red-600 hover:bg-red-500 text-white  rounded-md"
+                    onClick={() => { editSwitchOff(); addSwitchOff(); }}
+                  > Cancel
+                  </button>
+
+                  <button className='py-[0.15rem] mr-1 w-16 bg-green-600 hover:bg-green-500 text-white  rounded-md'>
+                    Save
+                  </button>
+                </div>
+              </div>) : null}
+
+          </div>
+
+          {/*-------------------------------------------- Table Search ----------------------------------------*/}
+          <div className={`${isSerching ? 'block' : 'hidden'} w-[30rem] mx-auto rounded-md mt-8 h-[19rem] border-l-2 border-r-2 border-black `}>
+
+            <div className="h-full flex flex-col justify-between">
+              <div className="w-full">
+                <div className="flex border-b font-bold py-1 border-black bg-slate-700 text-white rounded-t-md">
+                  <div className="w-2/4 pl-2 ">Station</div>
+                  <div className="w-2/4 ">State</div>
+                </div>
+                <div className="overflow-y-scroll h-[14.3rem] bg-white">
+                  <table className="w-full">
+                    <tbody>
+                      {searchedStations && searchedStations.map((row, index) => (
+                        <tr key={row.ZID}
+                          className={`${selectedRowIndex === index ? 'bg-blue-600 text-white' : ''} border-b font-bold hover:cursor-pointer hover:shadow-md`}
+                          onClick={()=>{handleRecordSelection(row,index)}}
+                          onDoubleClick={() => { searchSwitchOff() }}
+                        >
+                          <td className="w-2/4 border-r border-black pl-2">{row.DISTRICT}</td>
+                          <td className="w-2/4 pl-2">{row.STATE}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="py-1 border-t border-black bg-slate-700 rounded-b-md text-white">
+                <div className="w-full flex justify-between px-4">
+                  <div className="flex space-x-2">
+                    <div className="py-1 font-semibold"><p>Enter Name:</p></div>
+                    <input
+                      ref={searchRef}
+                      placeholder="Search by station...."
+                      className="border border-black rounded-sm px-2 text-black" type="text"
+                      value={searchedValue}
+                      onChange={handleSearch}
+                    ></input>
+                  </div>
+                  <button onClick={() => { searchSwitchOff() }} className="bg-red-600 hover:bg-red-500 rounded-md w-20 px-2 py-[2px] font-semibold">Cancel</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
         </div>
+
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Stations;
+export default Stations

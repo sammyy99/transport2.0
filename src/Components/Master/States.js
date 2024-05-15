@@ -110,8 +110,8 @@ const States = () => {
     setSelectedRowIndex(index) // this is when i click once this handleRecordSelection gets executed so that even on click i get blue highlighted row
     setState(row) 
     setSid(row.SID)
-    console.log('SID '+row.SID)
-    console.log('Name '+row.STATE)
+    //console.log('SID '+row.SID)
+    //console.log('Name '+row.STATE)
   }
   //--------------------------------Search Handling Functions----------------------
 
@@ -234,7 +234,8 @@ const States = () => {
               className={`py-1 px-3 w-20 bg-green-600 text-white rounded-md transition-all duration-200 hover:bg-green-500 ${isNewState?"shadow-md shadow-black":""}`}>
                 Add+
               </button>
-              <button onClick={()=>editStateSwitchOn()} 
+              <button onClick={()=>editStateSwitchOn()}
+              disabled = {!state?true:false} 
               className={`py-1 px-3 w-20 rounded-md transition-all duration-200 ${isEditing?"shadow-md shadow-black":""} ${!state?'bg-gray-400 border-none text-gray-200 cursor-not-allowed pointer-events-none':'bg-blue-600 text-white hover:bg-blue-500'}`}>
                 Edit
               </button>
@@ -246,6 +247,7 @@ const States = () => {
             <div className="justify-end flex">
               <button 
               onClick={()=>{handleDelete(sid)}} 
+              disabled = {(isSerching || isNewState || isEditing || !state) ? true : false}
               className={`${isSerching || isNewState || isEditing || !state?'bg-gray-400 border-none text-gray-200 cursor-not-allowed pointer-events-none':'bg-red-600 hover:bg-red-500 text-white'} py-1 px-3 w-20 rounded-md`} >
                 Delete
               </button>
@@ -367,6 +369,10 @@ const States = () => {
                 <button
                   ref={saveRef}
                   onClick={isNewState ? () => { handleSaveOnAdd() } : () => { handleSaveOnEdit() }}
+                  disabled = {( isNewState ?  
+                    (addEditStateAllowed ? ((newStateName === '' || newShortName === '') ? false : true) : false) 
+                  : (addEditSnameAllowed ? ((editStateName === '' || editShortName === '') ? false : true) : false)
+                  ) ? false : true}
                   className={`${( isNewState ?  
                     (addEditStateAllowed ? ((newStateName === '' || newShortName === '') ? false : true) : false) 
                   : (addEditSnameAllowed ? ((editStateName === '' || editShortName === '') ? false : true) : false)
