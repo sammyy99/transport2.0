@@ -13,6 +13,9 @@ const Stations = () => {
   const [isEditing, setIsEditing]= useState(false) // used as switch of edit 
   const [isSerching, setIsSearching]= useState(false)// used as switch for search
 
+  const [newStation, setNewStation] = useState() // updating value of entered new state here
+  const [editStation, setEditStation] = useState() // updating value of entered new state here
+
   const [selectedRowIndex, setSelectedRowIndex] = useState(0) // will be used for table record navigation
   const [searchedValue, setSearchedValue] = useState('')  // Will be used to store the value entered in search box
   const [searchedStations, setSearchedStations] = useState([])// searched District will be stored in this
@@ -21,11 +24,18 @@ const Stations = () => {
   const [selectedState, setSelectedState] = useState()  // will be stored Selected State
   const [selectedStation, setSelectedStation] = useState()  // will be stored Selected Station
 
+  const [popupMessage, setPopupMessage] = useState("") // to update popup message 
+  const [showHidePopup, setShowHidePopup] = useState(false) // to show or hide popup
+  const [alertbox,setAlertbox] = useState() // to set color of alertbox on true or false condition
+
+  const inputRef = useRef()
   const searchRef = useRef()
 
   console.log('SID '+sid)
   console.log('ZID '+zid)
-  console.log(selectedStationRecord)
+  //console.log(selectedStationRecord)
+  console.log(selectedState)
+  console.log(selectedStation)
 
 
   const getStates = async () => {   // Get all the states
@@ -66,17 +76,23 @@ const Stations = () => {
 
   const handleStateSelection = (e)=>{  // to select the SID value from dropbox
     setSid(e.target.value);
+    setSelectedState(e.target.options[e.target.selectedIndex].text); // Update selectedState
     setStateStations([])
+    setSelectedStation()  // emptying station when selecting state so that previous state dosent exist for any confusion
     setZid() // clearing any selected ZID so that on every change of state stations gets cleared
   }
   const handleStationSelection = (e)=>{  // to select the ZID value from dropbox
     setZid(e.target.value);
+    setSelectedStation(e.target.options[e.target.selectedIndex].text); // Update selectedStation
   }
 
   const handleRecordSelection = (row,index)=>{  // handling slection fo record with enter as well as click
     setSelectedRowIndex(index) // this is when i click once this handleRecordSelection gets executed so that even on click i get blue highlighted row
     setSelectedStationRecord(row) 
+    setSid(row.SID)
+    setSelectedState(row.STATE); // Update selectedState
     setZid(row.ZID)
+    setSelectedStation(row.DISTRICT); // Update selectedStation
   }
 
   const handleSearch = (e)=>{  // handling serach input 
@@ -85,10 +101,19 @@ const Stations = () => {
      setSelectedRowIndex(0)
   }
 
+  const handleAdd = async ()=>{
+    const response = await axios.post(`http://localhost:5000/stations/add/save`,{state:selectedState,station:newStation,sid:sid})
+    setPopupMessage(response.data.msg)
+    addSwitchOff()
+    await response.data.alert?setAlertbox(true) : setAlertbox(false)  // setting alertbox status true or false so that i can change colors.
+    handlePopup()
+ }
+
   const addSwitchOn = ()=>{
      setIsAdding(true)
      setIsEditing(false)
      setIsSearching(false) 
+     setNewStation('')
   }
   const addSwitchOff = ()=>{
     setIsAdding(false)
@@ -97,6 +122,7 @@ const Stations = () => {
     setIsEditing(true)
     setIsAdding(false)
     setIsSearching(false)
+    selectedStation&&setEditStation(selectedStation)  // setting textbox with selectedStation value only if it has value
   }
   const editSwitchOff = ()=>{
     setIsEditing(false)
@@ -112,12 +138,28 @@ const Stations = () => {
     setIsSearching(false)
   }
 
+  const popupSwitchOn = () => {
+    setShowHidePopup(true)
+  }
+  const popupSwitchOff = () => {
+    setShowHidePopup(false)
+  }
+  const handlePopup = () => {
+    popupSwitchOn()
+    setTimeout(() => {
+      popupSwitchOff()
+    }, 3000)
+  }
+
   useEffect(() => {
     getStates();
 
     if (isSerching) {
       searchRef.current?.focus();
   };
+    if (isAdding || isEditing) {
+    inputRef.current?.focus();
+  }
 
     const handleKeyDown = (event) => {
       if (event.key === 'ArrowUp') {
@@ -141,14 +183,14 @@ const Stations = () => {
          addSwitchOff()
          editSwitchOff()
          //cleanMessages()
-         //popupSwitchOff()
+         popupSwitchOff()
       }
   };
      document.addEventListener('keydown',handleKeyDown)
      return ()=> {
       document.removeEventListener('keydown',handleKeyDown)
      }
-  }, [sid, stateStations, searchedValue, searchedStations, isSerching, selectedRowIndex, selectedStationRecord])
+  }, [sid, stateStations, searchedValue, searchedStations, isSerching, selectedRowIndex, selectedStationRecord,selectedState,selectedStation,isAdding,isEditing])
 
 
   return (
@@ -164,19 +206,32 @@ const Stations = () => {
               <button className={`py-1 px-3 w-20 bg-green-600 text-white rounded-md transition-all duration-200 hover:bg-green-500`}
                 onClick={addSwitchOn}
               >Add+</button>
-              <button className={`py-1 px-3 w-20 bg-blue-600 text-white rounded-md transition-all duration-200 hover:bg-blue-500`}
+              <button className={`${!selectedStation?'bg-gray-400 text-gray-600':'bg-blue-600 hover:bg-blue-500 text-white'} py-1 px-3 w-20  rounded-md transition-all duration-200`}
                 onClick={editSwitchOn}
+                disabled={!selectedStation?true:false}
               >Edit</button>
               <button className={`py-1 px-3 w-20 bg-yellow-500 text-white rounded-md transition-all duration-200 hover:bg-yellow-400`}
                 onClick={()=>{searchSwitchOn(); getAllStations();}}
               >Search</button>
             </div>
             <div className='flex justify-end'>
-              <button className={`py-1 px-3 w-20 bg-red-600 text-white rounded-md transition-all duration-200 hover:bg-red-500`}>Delete</button>
+              <button className={`${!selectedStation? 'bg-gray-400 text-gray-600' : 'bg-red-600 hover:bg-red-500'} py-1 px-3 w-20  text-white rounded-md transition-all duration-200 `}
+              disabled={!selectedStation?true:false}
+              >Delete</button>
+
             </div>
           </div>
 
-          <div className={`${isSerching?'hidden':'block'} w-full mt-4 py-4 px-8 border border-black rounded-md shadow-sm shadow-black bg-white font-bold`}>
+          <div className={`${isSerching?'hidden':'block'} relative w-full mt-4 py-4 px-8 border border-black rounded-md shadow-sm shadow-black bg-white font-bold`}>
+
+          {showHidePopup ? (
+              <div className="absolute w-full h-full flex justify-center pr-6 items-center">
+                <p className={alertbox ? 'bg-green-400 px-5 py-2 rounded-lg font-semibold' : 'bg-red-400 px-5 py-2 rounded-lg font-semibold'}>
+                  {popupMessage}
+                </p>
+              </div>
+            ) : null}
+
             <div className='w-full flex'>
               <div className='w-1/6 inline-block py-1'>
                 State :
@@ -184,8 +239,9 @@ const Stations = () => {
               <div className='w-2/4 inline-block'>
                 <select className='w-full border py-1 px-3 border-black rounded-md'
                   onChange={handleStateSelection}
+                  value={selectedState} // Set value to selectedState
                 >
-                  <option value={''}>Select State</option>
+                  <option value={''}>{selectedState?selectedState:'Select State'}</option>
                   {states && states.map((state) => {
                     return (<option key={state.SID} value={state.SID}>{state.STATE}</option>)
                   })}
@@ -201,9 +257,10 @@ const Stations = () => {
                 <div className='w-2/4 inline-block'>
                   <select className='w-full border py-1 px-3 border-black rounded-md'
                     onChange={handleStationSelection}
-                    onFocus={() => { getStateStations(sid); }}
+                    onFocus={ sid?() => { getStateStations(sid)}:null}
+                    value={selectedStation} // Set value to selectedStation
                   >
-                    <option value={''}>Select Station</option>
+                    <option value={''}>{selectedStation?selectedStation:'Select Station'}</option>
                     {stateStations && stateStations.map((station) => {
                       return (<option key={station.ZID} value={station.ZID}>{station.DISTRICT}</option>)
                     })}
@@ -218,7 +275,10 @@ const Stations = () => {
                   Stations :
                 </div>
                 <div className='w-2/4 inline-block'>
-                  <input className='w-full border py-[0.08rem] px-3 border-black rounded-md'
+                  <input className='w-full border py-[0.08rem] px-4 border-black rounded-md'
+                  ref={inputRef}
+                  value={isAdding? newStation : (isEditing ? editStation : '')}
+                  onChange={(e)=>{isAdding?setNewStation(e.target.value.toUpperCase()):setEditStation(e.target.value.toUpperCase())}}
                   >
                   </input>
                 </div>
@@ -236,8 +296,9 @@ const Stations = () => {
                   > Cancel
                   </button>
 
-                  <button className='py-[0.15rem] mr-1 w-16 bg-green-600 hover:bg-green-500 text-white  rounded-md'>
-                    Save
+                  <button className={`py-[0.15rem] mr-1 w-16 bg-green-600 hover:bg-green-500 text-white  rounded-md`}
+                  onClick={()=>{handleAdd()}}
+                  > Save
                   </button>
                 </div>
               </div>) : null}
