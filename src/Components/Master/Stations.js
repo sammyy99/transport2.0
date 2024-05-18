@@ -122,15 +122,20 @@ const Stations = () => {
     }
   }
 
-   const handleDelete = async(id)=>{
+  const handleDelete = async (id) => {
     const delID = id
-    setStateStations(); // setting this so that on click on delete that row gets removed from there and user have to select new row
-    setZid(); // Cleaning ZID so that no conflict occurs after deleting
     const response = await axios.delete(`http://localhost:5000/stations/delete/${delID}`)
-    setPopupMessage(response.data.msg)
-    await response.data.alert?setAlertbox(true) : setAlertbox(false)  // setting alertbox status true or false so that i can change colors.
-    handlePopup()
-   }
+    if (response.status === 200) {
+      setStateStations(); // setting this so that on click on delete that row gets removed from there and user have to select new row
+      setZid(); // Cleaning ZID so that no conflict occurs after deleting
+      setSelectedStation(); // on deleting setting station null so that i see no error if user deletes once.
+      setPopupMessage(response.data.msg)
+      await response.data.alert ? setAlertbox(true) : setAlertbox(false)  // setting alertbox status true or false so that i can change colors.
+      handlePopup()
+    } else {
+      
+    }
+  }
 
   const addSwitchOn = ()=>{
      setIsAdding(true)
