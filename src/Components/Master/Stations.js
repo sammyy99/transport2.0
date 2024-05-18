@@ -77,7 +77,7 @@ const Stations = () => {
   const handleStateSelection = (e)=>{  // to select the SID value from dropbox
     setSid(e.target.value);
     setSelectedState(e.target.options[e.target.selectedIndex].text); // Update selectedState
-    !isEditing && setStateStations([])
+    !isEditing && setStateStations([])  
     !isEditing && setSelectedStation()  // emptying station when selecting state so that previous state dosent exist for any confusion
     !isEditing && setZid() // clearing any selected ZID so that on every change of state stations gets cleared
   }
@@ -108,6 +108,29 @@ const Stations = () => {
     await response.data.alert?setAlertbox(true) : setAlertbox(false)  // setting alertbox status true or false so that i can change colors.
     handlePopup()
  }
+
+  const handleEdit = async ()=>{
+    const response = await axios.post (`http://localhost:5000/stations/edit/save`,{state:selectedState,station:editStation,zid:zid,sid:sid})
+    if (response.status===200) {
+      setPopupMessage(response.data.msg)
+      editSwitchOff()
+      setSelectedStation(editStation)
+      await response.data.alert?setAlertbox(true) : setAlertbox(false)  // setting alertbox status true or false so that i can change colors.
+      handlePopup()
+    } else {
+      console.log(response.data.msg)
+    }
+  }
+
+   const handleDelete = async(id)=>{
+    const delID = id
+    setStateStations(); // setting this so that on click on delete that row gets removed from there and user have to select new row
+    setZid(); // Cleaning ZID so that no conflict occurs after deleting
+    const response = await axios.delete(`http://localhost:5000/stations/delete/${delID}`)
+    setPopupMessage(response.data.msg)
+    await response.data.alert?setAlertbox(true) : setAlertbox(false)  // setting alertbox status true or false so that i can change colors.
+    handlePopup()
+   }
 
   const addSwitchOn = ()=>{
      setIsAdding(true)
@@ -203,19 +226,20 @@ const Stations = () => {
 
           <div className='w-full flex justify-between font-bold'>
             <div className='flex space-x-1'>
-              <button className={`py-1 px-3 w-20 bg-green-600 text-white rounded-md transition-all duration-200 hover:bg-green-500`}
+              <button className={` ${isAdding?"shadow-md shadow-black":""} py-1 px-3 w-20 bg-green-600 text-white rounded-md transition-all duration-200 hover:bg-green-500 `}
                 onClick={addSwitchOn}
               >Add+</button>
-              <button className={`${!selectedStation?'bg-gray-400 text-gray-600':'bg-blue-600 hover:bg-blue-500 text-white'} py-1 px-3 w-20  rounded-md transition-all duration-200`}
+              <button className={`${!selectedStation?'bg-gray-400 text-gray-600':'bg-blue-600 hover:bg-blue-500 text-white'} ${isEditing?"shadow-md shadow-black":""} py-1 px-3 w-20  rounded-md transition-all duration-200`}
                 onClick={editSwitchOn}
                 disabled={!selectedStation?true:false}
               >Edit</button>
-              <button className={`py-1 px-3 w-20 bg-yellow-500 text-white rounded-md transition-all duration-200 hover:bg-yellow-400`}
+              <button className={`${isSerching?"shadow-md shadow-black":""} py-1 px-3 w-20 bg-yellow-500 text-white rounded-md transition-all duration-200 hover:bg-yellow-400`}
                 onClick={()=>{searchSwitchOn(); getAllStations();}}
               >Search</button>
             </div>
             <div className='flex justify-end'>
               <button className={`${!selectedStation? 'bg-gray-400 text-gray-600' : 'bg-red-600 hover:bg-red-500'} py-1 px-3 w-20  text-white rounded-md transition-all duration-200 `}
+              onClick={()=>{handleDelete(zid)}}
               disabled={!selectedStation?true:false}
               >Delete</button>
 
@@ -296,9 +320,9 @@ const Stations = () => {
                   > Cancel
                   </button>
 
-                  <button className={`${isAdding?(newStation === ''?'bg-gray-400 text-gray-600':'bg-green-600 hover:bg-green-500 text-white'):(isEditing?(editStation===''?'bg-gray-400 text-gray-600':'bg-green-600 hover:bg-green-500 text-white'):'bg-gray-400 text-gray-600')} py-[0.15rem] mr-1 w-16   rounded-md`}
-                  disabled={isAdding?(newStation === ''?true:false):(isEditing?(editStation===''?true:false):true)}
-                  onClick={()=>{handleAdd()}}
+                  <button className={`${isAdding?(newStation === '' || !selectedState ?'bg-gray-400 text-gray-600':'bg-green-600 hover:bg-green-500 text-white'):(isEditing?(editStation===''?'bg-gray-400 text-gray-600':'bg-green-600 hover:bg-green-500 text-white'):'bg-gray-400 text-gray-600')} py-[0.15rem] mr-1 w-16   rounded-md`}
+                  disabled={isAdding?(newStation === '' || !selectedState?true:false):(isEditing?(editStation===''?true:false):true)}
+                  onClick={isAdding ? ()=>{handleAdd()} : ()=>{handleEdit()}}
                   > Save
                   </button>
                 </div>

@@ -69,24 +69,49 @@ router.post('/stations/add/save',async(req,res)=>{  // save handle for add
     }
 })
 
+router.post('/stations/edit/save',async(req,res)=>{
+    try {
+        const body = req.body
+        console.log(body)
+        const result = await sql.query(`SELECT * from SDIST WHERE DISTRICT = '${body.station}' AND SID = ${body.sid}`)
+        if (result.recordset.length>0) {
+            res.status(200).json({ msg: "🚫 This station already exist in this state", alert: false })
+        } else {
+            const response = await sql.query(`UPDATE SDIST
+                SET STATE = '${body.state}',
+                DISTRICT = '${body.station}',
+                SID = ${body.sid}
+                WHERE ZID = ${body.zid};`)
+                if (response.rowsAffected[0] > 0) {
+                    res.status(200).json({ msg: "✅ Station updated successfully",alert:true});
+                } else {
+                    res.status(200).json({ msg: "❕ No records were updated",alert:false});
+                } 
+        }
+    } catch (error) {
+        res.status(500).json({message:"Internal server error (Error in saving this state data)",err:error})
+       console.log(error)
+    }
+})
 
 
-/*router.delete("/stations/delete/:id",async (req,res)=>{  // for delete handle
+
+router.delete("/stations/delete/:id",async (req,res)=>{  // for delete handle
     const zid = req.params.id
     //console.log(zid)
     try {
-        const result = await sql.query(`SELECT * from SDIST WHERE SID =${sid}`)
+        const result = await sql.query(`SELECT * from WEBID WHERE ZID =${zid}`)
         console.log(result.recordset)
         if (result.recordset.length>0) {
             res.json({msg:"🚫 Account exist. Station cannot be deleted.",alert:false})
         } else {
-            await sql.query(`DELETE FROM SSTATE WHERE SID = ${sid}`)
+            await sql.query(`DELETE FROM SDIST WHERE ZID = ${zid}`)
             res.json({msg:"✅ Successfully deleted",alert:true})
         }
     } catch (error) {
         res.status(500).json({message:"Internal server error (Getting searched states from db failed)",err:error})
         console.log(error)
     }
-})*/
+})
 
 export default router;
