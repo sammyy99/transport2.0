@@ -1,0 +1,3 @@
+export const webServiceOptions = [{value:'Y',option:'All Work'},{value:'N',option:'No Service'},{value:'U',option:'Upload'},{value:'R',option:'Bilty Update'}]
+export const BHIAC = [{value:'B',option:'Branch'},{value:'H',option:'Head Office'},{value:'I',option:'Individual'},{value:'A',option:'A'},{value:'C',option:'C'}]
+export const accountType = [{value:'Transport',option:'Transport'},{value:'Publisher',option:'Publisher'},{value:'PDealer',option:'PDealer'}]
