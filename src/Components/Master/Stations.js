@@ -336,7 +336,7 @@ const Stations = () => {
           </div>
 
           {/*-------------------------------------------- Table Search ----------------------------------------*/}
-          <div className={`${isSerching ? 'block' : 'hidden'} w-[30rem] mx-auto rounded-md mt-8 h-[19rem] border-l-2 border-r-2 border-black `}>
+          <div className={`${isSerching ? 'block' : 'hidden'} w-[30rem] mx-auto rounded-md mt-8 h-[19rem] shadow-lg shadow-black border-black `}>
 
             <div className="h-full flex flex-col justify-between">
               <div className="w-full">

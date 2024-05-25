@@ -14,11 +14,11 @@ import Accounts from './Master/Accounts'
 const Homepage = () => {
 
   return (
-    <div className='h-screen overflow-hidden '>
+    <div className='h-[100vh]'>
       <Header/>
-      <div className='flex h-full'>
+      <div className='flex h-full overflow-y-hidden'>
 
-        <div className='w-[13%] bg-gray-800 px-8 pt-4 text-lg'>
+        <div className='w-[13%] bg-gray-800 px-8 pt-20 text-lg'>
         <Routes>
             <Route path='masters/*' element={<Master/>}/>
             <Route path='vouchers/*' element={<Vouchers/>}/>
@@ -28,7 +28,7 @@ const Homepage = () => {
         </Routes>   
         </div>
 
-        <div className='w-[87%] '>
+        <div className='w-[87%] pt-14'>
             <Routes>
                 <Route path='masters/states' element={<States/>}/>
                 <Route path='masters/stations' element={<Stations/>}/>

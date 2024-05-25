@@ -19,7 +19,7 @@ const Header = () => {
 
 
   return (
-    <header className="bg-gray-800 text-white shadow-md shadow-black w-screen">
+    <header className="fixed bg-gray-800 text-white shadow-md shadow-black w-screen">
       <nav className="flex  justify-between mx-auto p-4 px-8">
         <div className="font-extrabold">Solution Point</div>
         <ul className="flex space-x-7 text-lg">

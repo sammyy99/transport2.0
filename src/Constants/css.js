@@ -1,2 +1,2 @@
 export const accountsInputBox = "border border-black rounded-sm px-1"
-export const accountLabels = 'w-32'
+export const accountLabels = 'w-32 text-right mr-2'
