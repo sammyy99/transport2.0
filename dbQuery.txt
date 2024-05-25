@@ -1,0 +1,82 @@
+await sql.query(`INSERT INTO example (STATE,SID) VALUES ('${data.name}',(SELECT MAX(SID)+1 FROM STATE));`)
+
+await sql.query(`INSERT INTO SSTATE (STATE,SID) VALUES ('${data.name}',(SELECT MAX(SID)+1 FROM SSTATE));`)
+
+await sql.query(`SELECT STATE FROM SSTATE WHERE STATE = '${data.name}' AND SID != ${data.localSid}`)
+------------------------------------------------------------------
+Some normal queries 
+
+ALTER TABLE SSTATE
+ADD ID INT IDENTITY(1,1);
+------------------------------------------------------------------
+CREATE TABLE EXAMPLE (
+    ID INT IDENTITY(1,1) PRIMARY KEY,
+    STATE NVARCHAR(MAX),
+    SNAME NVARCHAR(MAX),
+    SID INT,
+);
+-------------------------------------------------------------------
+DECLARE @MaxSID INT;
+SELECT @MaxSID = ISNULL(MAX(SID), 0) FROM EXAMPLE;
+SET @MaxSID = @MaxSID + 1;
+
+INSERT INTO EXAMPLE (STATE, SNAME, SID)
+VALUES 
+('ALABAMA', 'AL', @MaxSID),
+('ALASKA', 'AK', @MaxSID + 1),
+('ARIZONA', 'AZ', @MaxSID + 2),
+('ARKANSAS', 'AR', @MaxSID + 3),
+('CALIFORNIA', 'CA', @MaxSID + 4),
+('COLORADO', 'CO', @MaxSID + 5),
+('CONNECTICUT', 'CT', @MaxSID + 6),
+('DELAWARE', 'DE', @MaxSID + 7),
+('FLORIDA', 'FL', @MaxSID + 8),
+('GEORGIA', 'GA', @MaxSID + 9),
+('HAWAII', 'HI', @MaxSID + 10),
+('IDAHO', 'ID', @MaxSID + 11),
+('ILLINOIS', 'IL', @MaxSID + 12),
+('INDIANA', 'IN', @MaxSID + 13),
+('IOWA', 'IA', @MaxSID + 14),
+('KANSAS', 'KS', @MaxSID + 15),
+('KENTUCKY', 'KY', @MaxSID + 16),
+('LOUISIANA', 'LA', @MaxSID + 17),
+('MAINE', 'ME', @MaxSID + 18),
+('MARYLAND', 'MD', @MaxSID + 19),
+('MASSACHUSETTS', 'MA', @MaxSID + 20),
+('MICHIGAN', 'MI', @MaxSID + 21),
+('MINNESOTA', 'MN', @MaxSID + 22),
+('MISSISSIPPI', 'MS', @MaxSID + 23),
+('MISSOURI', 'MO', @MaxSID + 24),
+('MONTANA', 'MT', @MaxSID + 25),
+('NEBRASKA', 'NE', @MaxSID + 26),
+('NEVADA', 'NV', @MaxSID + 27),
+('NEW HAMPSHIRE', 'NH', @MaxSID + 28),
+('NEW JERSEY', 'NJ', @MaxSID + 29),
+('NEW MEXICO', 'NM', @MaxSID + 30),
+('NEW YORK', 'NY', @MaxSID + 31),
+('NORTH CAROLINA', 'NC', @MaxSID + 32),
+('NORTH DAKOTA', 'ND', @MaxSID + 33),
+('OHIO', 'OH', @MaxSID + 34),
+('OKLAHOMA', 'OK', @MaxSID + 35),
+('OREGON', 'OR', @MaxSID + 36),
+('PENNSYLVANIA', 'PA', @MaxSID + 37),
+('RHODE ISLAND', 'RI', @MaxSID + 38),
+('SOUTH CAROLINA', 'SC', @MaxSID + 39);
+------------------------------------------------------------------
+
+ALTER TABLE WEBID
+ADD ZID int;
+
+ALTER TABLE SDIST ALTER COLUMN ZID int NOT NULL;
+
+ALTER TABLE SDIST
+ADD CONSTRAINT PK_ZID PRIMARY KEY (ZID);
+
+ALTER TABLE WEBID
+ADD CONSTRAINT fk_zid
+FOREIGN KEY (ZID) REFERENCES SDIST(ZID);
+
+UPDATE WEBID
+SET WEBID.ZID = SDIST.ZID
+FROM WEBID
+JOIN SDIST ON WEBID.DISTRICT = SDIST.DISTRICT;

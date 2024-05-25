@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from 'axios';
 import { accountLabels, accountsInputBox } from "../../Constants/css";
-import { BHIAC, accountType, webServiceOptions } from "../../Constants/accounts";
+import { accountType } from "../../Constants/accounts";
 
 const Accounts = () => {
   const [formData, setFormData] = useState({
@@ -34,7 +34,7 @@ const Accounts = () => {
     boff: "",
     fromStationInBilty: "",
     ewaybillApi: "",
-    contactNo: "",
+    contactPerson: "",
     officePh: "",
     resi: "",
     mobileNo: "",
@@ -133,7 +133,7 @@ const Accounts = () => {
     <div className="w-full overflow-y-auto h-full flex justify-center">
       <div className="w-[1100px] my-auto">
 
-        <div className="font-bold font-sans py-2 px-4 my-2 border border-black rounded-md shadow-black shadow-md bg-slate-200">
+        <div className="font-bold font-sans pt-2 px-4 my-2 border border-black rounded-md  bg-slate-200">
 
           <div className="w-full flex justify-between">
             <div className="flex space-x-1">
@@ -391,8 +391,8 @@ const Accounts = () => {
             <div className="mt-6">
               <div className="flex w-full">
                 <div className="flex w-1/2 mt-0">
-                  <div className={`${accountLabels}`}>Contact No. :</div>
-                  <input name="contactNo" value={formData.contactNo} onChange={handleChange} className={`${accountsInputBox} w-56`} ></input>
+                  <div className={`${accountLabels}`}>Contact Person :</div>
+                  <input name="contactPerson" value={formData.contactPerson} onChange={handleChange} className={`${accountsInputBox} w-56`} ></input>
                 </div>
               </div>
 
@@ -430,6 +430,12 @@ const Accounts = () => {
               </div>
             </div>
           </div>
+
+          <div className="flex w-full border rounded-md border-black my-1 shadow-sm shadow-black">
+            <div className="w-[18%] text-center border-r rounded-l-md border-black py-1 bg-blue-400">HELP</div>
+            <div className="w-full rounded-r-md px-4 py-1 bg-amber-300">About selected field</div>
+          </div>
+
         </div>
       </div>
     </div>
