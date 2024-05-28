@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
+import { disabledButton } from '../../Constants/css';
 
 const Stations = () => {
 
@@ -234,7 +235,7 @@ const Stations = () => {
               <button className={` ${isAdding?"shadow-md shadow-black":""} py-1 px-3 w-20 bg-green-600 text-white rounded-md transition-all duration-200 hover:bg-green-500 `}
                 onClick={addSwitchOn}
               >Add+</button>
-              <button className={`${!selectedStation?'bg-gray-400 text-gray-600':'bg-blue-600 hover:bg-blue-500 text-white'} ${isEditing?"shadow-md shadow-black":""} py-1 px-3 w-20  rounded-md transition-all duration-200`}
+              <button className={`${!selectedStation?disabledButton:'bg-blue-600 hover:bg-blue-500 text-white'} ${isEditing?"shadow-md shadow-black":""} py-1 px-3 w-20  rounded-md transition-all duration-200`}
                 onClick={editSwitchOn}
                 disabled={!selectedStation?true:false}
               >Edit</button>
@@ -243,7 +244,7 @@ const Stations = () => {
               >Search</button>
             </div>
             <div className='flex justify-end'>
-              <button className={`${!selectedStation? 'bg-gray-400 text-gray-600' : 'bg-red-600 hover:bg-red-500'} py-1 px-3 w-20  text-white rounded-md transition-all duration-200 `}
+              <button className={`${!selectedStation? disabledButton : 'bg-red-600 hover:bg-red-500'} py-1 px-3 w-20  text-white rounded-md transition-all duration-200 `}
               onClick={()=>{handleDelete(zid)}}
               disabled={!selectedStation?true:false}
               >Delete</button>
@@ -325,7 +326,7 @@ const Stations = () => {
                   > Cancel
                   </button>
 
-                  <button className={`${isAdding?(newStation === '' || !selectedState ?'bg-gray-400 text-gray-600':'bg-green-600 hover:bg-green-500 text-white'):(isEditing?(editStation===''?'bg-gray-400 text-gray-600':'bg-green-600 hover:bg-green-500 text-white'):'bg-gray-400 text-gray-600')} py-[0.15rem] mr-1 w-16   rounded-md`}
+                  <button className={`${isAdding?(newStation === '' || !selectedState ?disabledButton:'bg-green-600 hover:bg-green-500 text-white'):(isEditing?(editStation===''?disabledButton:'bg-green-600 hover:bg-green-500 text-white'):disabledButton)} py-[0.15rem] mr-1 w-16   rounded-md`}
                   disabled={isAdding?(newStation === '' || !selectedState?true:false):(isEditing?(editStation===''?true:false):true)}
                   onClick={isAdding ? ()=>{handleAdd()} : ()=>{handleEdit()}}
                   > Save
