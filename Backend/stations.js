@@ -100,7 +100,7 @@ router.delete("/stations/delete/:id",async (req,res)=>{  // for delete handle
     const zid = req.params.id
     //console.log(zid)
     try {
-        const result = await sql.query(`SELECT * from SWEBID WHERE ZID =${zid}`)
+        const result = await sql.query(`SELECT * from WEBID WHERE ZID =${zid}`)
         console.log(result.recordset)
         if (result.recordset.length>0) {
             res.json({msg:"🚫 Account exist. Station cannot be deleted.",alert:false})

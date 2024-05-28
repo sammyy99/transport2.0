@@ -1,6 +1,6 @@
 export const webServiceOptions = [{value:'Y',option:'All Work'},{value:'N',option:'No Service'},{value:'U',option:'Upload'},{value:'R',option:'Bilty Update'}]
 export const BHIAC = [{value:'B',option:'Branch'},{value:'H',option:'Head Office'},{value:'I',option:'Individual'},{value:'A',option:'A'},{value:'C',option:'C'}]
-export const accountType = [{value:'Transport',option:'Transport'},{value:'Publisher',option:'Publisher'},{value:'PDealer',option:'PDealer'}]
+export const accountType = [{value:'TRANSPORT',option:'TRANSPORT'},{value:'PUBLISHER',option:'PUBLISHER'},{value:'PDEALER',option:'PDEALER'}]
 
 export const help = [
     { id: 0, msg: 'Select Account Type' },
@@ -40,3 +40,66 @@ export const help = [
     { id: 34, msg: 'Enter email Address' },
     { id: 35, msg: 'Enter Domain' },
 ];
+
+/*// Event listener for Enter key navigation between input fields
+const handleEnterKeyDown = (event) => {
+  if (!isSearching && event.key === 'Enter') {
+    event.preventDefault();
+    const formElements = Array.from(divRef.current.querySelectorAll('input, select'));
+    const index = formElements.indexOf(document.activeElement);
+    if (index > -1 && index < formElements.length - 1) {
+      formElements[index + 1].focus();
+    }
+  }
+};
+
+useEffect(() => {
+  if (isSearching) {
+    searchRef.current?.focus();
+  }
+
+  // Event listener for search table navigation
+  const handleTableNavigation = (event) => {
+    if (event.key === 'ArrowUp') {
+      setSelectedRowIndex((prevIndex) => {
+        return prevIndex > 0 ? prevIndex - 1 : 0;
+      });
+    } else if (event.key === 'ArrowDown') {
+      setSelectedRowIndex((prevIndex) => {
+        return prevIndex < searchedRecords.length - 1 ? prevIndex + 1 : searchedRecords.length - 1;
+      });
+    } else if (event.key === 'Enter') {
+      if (searchedRecords.length > 0 && selectedRowIndex >= 0) {
+        const selectedRow = searchedRecords[selectedRowIndex];
+        if (selectedRow) {
+          handleRecordSelection(selectedRow);
+          searchSwitchOff();
+        }
+      }
+    } else if (event.key === 'Escape') {
+      searchSwitchOff();
+      setFullScreen(false);
+    }
+  };
+
+  document.addEventListener('keydown', handleTableNavigation);
+  document.addEventListener('keydown', handleEnterKeyDown);
+
+  return () => {
+    document.removeEventListener('keydown', handleTableNavigation);
+    document.removeEventListener('keydown', handleEnterKeyDown);
+  }
+}, [isSearching, selectedRowIndex, searchedRecords, helpId, fullScreen]);
+ */
+
+/*const handleSubmit = async (e) => {
+  e.preventDefault();
+  const dataToSave = {
+    ...formData,
+    PODATE: formatInputDateToMSSQL(formData.PODATE),
+    FDATE: formatInputDateToMSSQL(formData.FDATE),
+    TDATE: formatInputDateToMSSQL(formData.TDATE),
+    // format other date fields if any...
+  };
+  await axios.post('http://localhost:5000/account', dataToSave);
+};*/
