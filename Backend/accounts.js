@@ -26,4 +26,25 @@ router.post('/accounts/searchaccounts', async (req,res)=>{
     }
 })
 
+router.get("/accounts/getstates",async (req,res)=>{  // to get all states
+  try {
+      const dbresponse = await sql.query(`Select * from SSTATE`);
+      res.json(dbresponse.recordset)
+  } catch (error) {
+      res.status(500).json({message:"Internal server error (Getting states from db failed)",err:error})
+      console.log(error)
+  }  
+})
+
+router.get("/accounts/getstations/:id",async (req,res)=>{  // to get all states
+  try {
+      const sid = req.params.id
+      const dbresponse = await sql.query(`Select * from SDIST where SID = ${sid}`);
+      res.json(dbresponse.recordset)
+  } catch (error) {
+      res.status(500).json({message:"Internal server error (Getting states from db failed)",err:error})
+      console.log(error)
+  }  
+})
+
 export default router;

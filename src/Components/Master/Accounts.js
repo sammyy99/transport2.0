@@ -47,6 +47,9 @@ const Accounts = () => {
     DOMAIN: "",
   }); console.log(selectedFormRecord)  // selected account record from table will be updated here
 
+  const [states,setStates] = useState();
+  const [stations,setStations] = useState();
+
   const [whichSearch, setWhichSearch] = useState('')  // Search table of NAME OR STATION
   const [isSearching, setIsSearching] = useState('');  // search switch
   const [selectedRowIndex, setSelectedRowIndex] = useState(0) // will be used for table record navigation
@@ -78,6 +81,22 @@ const Accounts = () => {
     try {
       const response = await axios.post(`http://localhost:5000/accounts/searchaccounts`, { searchedValue: value, searchBy: type });
       setsearchedRecords(response.data);
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  const getStates = async()=>{
+    try {
+      const response = await axios.get(`http://localhost:5000/accounts/getstates`)
+      setStates(response.data);
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  const getStations = async(sid)=>{
+    try {
+      const response = await axios.get(`http://localhost:5000/accounts/getstations/${sid}`)
+      setStations(response.data)
     } catch (error) {
       console.log(error)
     }
@@ -124,6 +143,9 @@ const Accounts = () => {
             [name]: value.toUpperCase(),
           });
         }
+      } else if (name === 'ACCTYPE' || name === 'STATE' || name === 'DISTRICT') {
+        if (name === 'STATE') setselectedFormRecord({...selectedFormRecord, SID:e.target.value,STATE:e.target.options[e.target.selectedIndex].text});
+        if (name === 'DISTRICT') setselectedFormRecord({...selectedFormRecord, ZID:e.target.value,DISTRICT:e.target.options[e.target.selectedIndex].text});
       } else {
         // Handle other fields normally
         setselectedFormRecord({
@@ -219,11 +241,13 @@ const Accounts = () => {
           return prevIndex < searchedRecords.length - 1 ? prevIndex + 1 : searchedRecords.length - 1;
         });
       } else if (event.key === 'Enter') {
-        if (searchedRecords.length > 0 && selectedRowIndex >= 0) {
-          const selectedRow = searchedRecords[selectedRowIndex];
-          if (selectedRow) {
-            handleRecordSelection(selectedRow);
-            searchSwitchOff()
+        if (isSearching) {
+          if (searchedRecords.length > 0 && selectedRowIndex >= 0) {
+            const selectedRow = searchedRecords[selectedRowIndex];
+            if (selectedRow) {
+              handleRecordSelection(selectedRow);
+              searchSwitchOff()
+            }
           }
         }
       } else if (event.key === 'Escape') {
@@ -267,8 +291,8 @@ const Accounts = () => {
               onClick={editSwitchOn}
               disabled={selectedFormRecord.WEBID !== null?false:true}
               >Edit</button>
-              <button className={`${selectedFormRecord.WEBID === ''?disabledButton:(isAdding || isSearching ? disabledButton : 'bg-red-600 hover:bg-red-500 text-white')} py-1 px-3 w-20  rounded-md transition-all duration-200`}
-              disabled={selectedFormRecord.WEBID === ''?true:(isAdding || isSearching ? true : false)}
+              <button className={`${selectedFormRecord.WEBID === null?disabledButton:(isAdding || isSearching ? disabledButton : 'bg-red-600 hover:bg-red-500 text-white')} py-1 px-3 w-20  rounded-md transition-all duration-200`}
+              disabled={selectedFormRecord.WEBID === null?true:(isAdding || isSearching ? true : false)}
               >Delete</button>
             </div>
             )}
@@ -362,9 +386,12 @@ const Accounts = () => {
                 </div>
                 <div className="flex w-1/2">
                   <div><p className={`${accountLabels}`}>State <span className="text-red-600">*</span> :</p></div>
-                  <select onFocus={handleFocus} id={1} name="state" value={selectedFormRecord.SID} onChange={handleChange} disabled={!isAdding && !isEditing}
+                  <select onFocus={(e)=>{handleFocus(e);getStates();}} id={1} name="STATE" value={selectedFormRecord.SID} onChange={handleChange} disabled={!isAdding && !isEditing}
                   className={`${accountsInputBox} ${helpId === 1 && accountsInputActive} w-56`}>
-                    <option>{selectedFormRecord.STATE}</option>
+                    <option value={setselectedFormRecord.SID}>{selectedFormRecord.STATE}</option>
+                    {states && states.map((row)=>{
+                      return <option key={row.SID} value={row.SID} >{row.STATE}</option>
+                    })}
                   </select>
                 </div>
               </div>
@@ -372,9 +399,12 @@ const Accounts = () => {
               <div className="flex w-full mt-0">
                 <div className="flex w-1/2">
                   <div><p className={`${accountLabels}`}>Station <span className="text-red-600">*</span> :</p></div>
-                  <select onFocus={handleFocus} id={2} name="DISTRICT" value={selectedFormRecord.ZID} onChange={handleChange}disabled={!isAdding && !isEditing}
+                  <select onFocus={(e)=>{handleFocus(e);selectedFormRecord.SID && getStations(selectedFormRecord.SID);}} id={2} name="DISTRICT" value={selectedFormRecord.ZID} onChange={handleChange}disabled={!isAdding && !isEditing}
                    className={`${accountsInputBox} ${helpId === 2 && accountsInputActive} w-56`}>
-                    <option>{selectedFormRecord.DISTRICT}</option>
+                    <option value={setselectedFormRecord.ZID}>{selectedFormRecord.DISTRICT}</option>
+                    {stations && stations.map((row)=>{
+                      return <option key={row.ZID} value={row.ZID}>{row.DISTRICT}</option>
+                    })}
                   </select>
                 </div>
 
@@ -611,7 +641,7 @@ const Accounts = () => {
             className={`${isAdding?'bg-green-600 text-white':(isEditing?"bg-blue-600 text-white":'bg-stone-400')} w-[15%] text-center border-r rounded-l-md border-black py-1 `}
             >
               {isAdding?'ADDING':(isEditing?"EDITING":'HELP')}</div>
-            <div className="w-[70%] px-4 py-1 bg-amber-300">{helpId===null?'':helpMsg}</div>
+            <div className="w-[70%] px-4 py-1 bg-amber-300">{helpId===null?'Information for respective fields will be displayed on Adding or Editing':helpMsg}</div>
             <button onClick={toggleFullScreen} className="py-1 w-[15%] bg-neutral-800 text-white rounded-r-md transition-all duration-200 hover:bg-neutral-600">Full Screen</button>
           </div>
 
