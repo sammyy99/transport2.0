@@ -6,7 +6,9 @@ import { accountLabels, accountsInputBox, accountsInputActive, disabledButton } 
 const Accounts = () => {
 
   const [selectedFormRecord, setselectedFormRecord] = useState({
-    WEBID: "",
+    WEBID: null,
+    SID: null,
+    ZID: null,
     ACCTYPE: "",
     STATE: "",
     DISTRICT: "",
@@ -54,13 +56,14 @@ const Accounts = () => {
   const [isAdding, setIsAdding] = useState(false) // used as switch of add 
   const [isEditing, setIsEditing] = useState(false) // used as switch of edit 
 
-  const [helpId, setHelpId] = useState(0); // for getting help id
+  const [helpId, setHelpId] = useState(null); // for getting help id
   const [helpMsg, setHelpMsg] = useState('') // for getting msg
 
   const [fullScreen, setFullScreen] = useState(false); console.log(fullScreen)
 
   const searchRef = useRef()
   const divRef = useRef(null);  // Full screen div
+  const accTypeRef = useRef()
 
 
   const getAllAccounts = async (order) => {
@@ -149,6 +152,7 @@ const Accounts = () => {
   }
   const addSwitchOff = () => {
     setIsAdding(false)
+    setHelpId(null)
   }
   const editSwitchOn = () => {
     setIsEditing(true)
@@ -158,6 +162,7 @@ const Accounts = () => {
   }
   const editSwitchOff = () => {
     setIsEditing(false)
+    setHelpId(null)
   }
   const searchSwitchOn = () => {
     setIsSearching(true)
@@ -200,6 +205,9 @@ const Accounts = () => {
     if (isSearching) {
       searchRef.current?.focus();
     };
+    if (isAdding || isEditing) {
+    accTypeRef.current.focus()
+    }
 
     const handleKeyDown = (event) => {
       if (event.key === 'ArrowUp') {
@@ -231,7 +239,7 @@ const Accounts = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isSearching, isAdding, isEditing, selectedRowIndex, searchedRecords, helpId, fullScreen]);
+  }, [isSearching, isAdding, isEditing, selectedRowIndex, searchedRecords, fullScreen]);
 
 
   return (
@@ -255,9 +263,9 @@ const Accounts = () => {
               <button className={`py-1 px-3 w-20 ${isAdding?"shadow-md shadow-black":""} bg-green-600 hover:bg-green-500 text-white rounded-md `} 
               onClick={addSwitchOn}
               >Add</button>
-              <button className={`py-1 px-3 w-20 ${isEditing?"shadow-md shadow-black":""} ${selectedFormRecord.WEBID === ''? disabledButton:'bg-blue-600 hover:bg-blue-500 text-white'}  rounded-md `}
+              <button className={`py-1 px-3 w-20 ${isEditing?"shadow-md shadow-black":""} ${selectedFormRecord.WEBID === null? disabledButton:'bg-blue-600 hover:bg-blue-500 text-white'}  rounded-md `}
               onClick={editSwitchOn}
-              disabled={selectedFormRecord.WEBID !== ''?false:true}
+              disabled={selectedFormRecord.WEBID !== null?false:true}
               >Edit</button>
               <button className={`${selectedFormRecord.WEBID === ''?disabledButton:(isAdding || isSearching ? disabledButton : 'bg-red-600 hover:bg-red-500 text-white')} py-1 px-3 w-20  rounded-md transition-all duration-200`}
               disabled={selectedFormRecord.WEBID === ''?true:(isAdding || isSearching ? true : false)}
@@ -343,8 +351,9 @@ const Accounts = () => {
             <div>
               <div className="flex w-full">
                 <div className="flex w-1/2">
-                  <div><p className={`${accountLabels}`}>A/C Type :</p></div>
-                  <select onFocus={handleFocus} id={0} name="ACCTYPE" value={selectedFormRecord.ACCTYPE} onChange={handleChange}  disabled={!isAdding && !isEditing}
+                  <div><p className={`${accountLabels}`}>A/C Type <span className="text-red-600">*</span> :</p></div>
+                  <select ref={accTypeRef} onFocus={handleFocus} id={0} name="ACCTYPE" value={selectedFormRecord.ACCTYPE} onChange={handleChange}  
+                  disabled={!isAdding && !isEditing}
                   className={`${accountsInputBox} ${helpId === 0 && accountsInputActive} w-56`}>
                     {accountType && accountType.map((item) => (
                       <option key={item.value} value={item.value}>{item.option}</option>
@@ -352,7 +361,7 @@ const Accounts = () => {
                   </select>
                 </div>
                 <div className="flex w-1/2">
-                  <div><p className={`${accountLabels}`}>State :</p></div>
+                  <div><p className={`${accountLabels}`}>State <span className="text-red-600">*</span> :</p></div>
                   <select onFocus={handleFocus} id={1} name="state" value={selectedFormRecord.SID} onChange={handleChange} disabled={!isAdding && !isEditing}
                   className={`${accountsInputBox} ${helpId === 1 && accountsInputActive} w-56`}>
                     <option>{selectedFormRecord.STATE}</option>
@@ -362,7 +371,7 @@ const Accounts = () => {
 
               <div className="flex w-full mt-0">
                 <div className="flex w-1/2">
-                  <div><p className={`${accountLabels}`}>Station :</p></div>
+                  <div><p className={`${accountLabels}`}>Station <span className="text-red-600">*</span> :</p></div>
                   <select onFocus={handleFocus} id={2} name="DISTRICT" value={selectedFormRecord.ZID} onChange={handleChange}disabled={!isAdding && !isEditing}
                    className={`${accountsInputBox} ${helpId === 2 && accountsInputActive} w-56`}>
                     <option>{selectedFormRecord.DISTRICT}</option>
@@ -380,7 +389,7 @@ const Accounts = () => {
             <div className="flex mt-6">
               <div className="w-1/2">
                 <div className="flex mt-0">
-                  <div className={`${accountLabels}`}>A/c Name :</div>
+                  <div className={`${accountLabels}`}>A/c Name <span className="text-red-600">*</span> :</div>
                   <input onFocus={handleFocus} id={4} name="ACCNAME" value={selectedFormRecord.ACCNAME} onChange={handleChange} disabled={!isAdding && !isEditing}
                   className={`${accountsInputBox} ${helpId === 4 && accountsInputActive} w-[75%]`}></input>
                 </div>
@@ -602,7 +611,7 @@ const Accounts = () => {
             className={`${isAdding?'bg-green-600 text-white':(isEditing?"bg-blue-600 text-white":'bg-stone-400')} w-[15%] text-center border-r rounded-l-md border-black py-1 `}
             >
               {isAdding?'ADDING':(isEditing?"EDITING":'HELP')}</div>
-            <div className="w-[70%] px-4 py-1 bg-amber-300">{helpMsg}</div>
+            <div className="w-[70%] px-4 py-1 bg-amber-300">{helpId===null?'':helpMsg}</div>
             <button onClick={toggleFullScreen} className="py-1 w-[15%] bg-neutral-800 text-white rounded-r-md transition-all duration-200 hover:bg-neutral-600">Full Screen</button>
           </div>
 
