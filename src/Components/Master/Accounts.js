@@ -64,9 +64,15 @@ const Accounts = () => {
 
   const [fullScreen, setFullScreen] = useState(false); console.log(fullScreen)
 
+  const [popupMessage, setPopupMessage] = useState("") // to update popup message 
+  const [showHidePopup, setShowHidePopup] = useState(false) // to show or hide popup
+  const [alertbox,setAlertbox] = useState() // to set color of alertbox on true or false condition
+
   const searchRef = useRef()
   const divRef = useRef(null);  // Full screen div
-  const accTypeRef = useRef()
+  const accTypeRef = useRef();
+  const stationRef = useRef();
+  const accountNameRef = useRef();
 
 
   const getAllAccounts = async (order) => {
@@ -97,6 +103,64 @@ const Accounts = () => {
     try {
       const response = await axios.get(`http://localhost:5000/accounts/getstations/${sid}`)
       setStations(response.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const handleStationValidation = async()=>{  // Station Validations
+    try {
+      const response = await axios.post(`http://localhost:5000/accounts/validation/station`,{sid:selectedFormRecord.SID,zid:selectedFormRecord.ZID})
+      setPopupMessage(response.data.msg)
+      await response.data.alert ? setAlertbox(true) : setAlertbox(false)  // setting alertbox status true or false so that i can change colors.
+      if (response.data.alert === false) {
+        handlePopup();
+        stationRef.current.focus()
+      }else{
+        popupSwitchOff();
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  const accountNameValidation = async () => {
+    try {
+      if (isAdding) {
+        const response = await axios.post(`http://localhost:5000/accounts/validation/accountname`, { name: selectedFormRecord.ACCNAME, webid: 0 })
+        setPopupMessage(response.data.msg)
+        setAlertbox(response.data.alert)
+        if (response.data.alert === false) {
+          handlePopup();
+          accountNameRef.current.focus()
+        } else {
+          popupSwitchOff();
+        }
+      } else {
+        const response = await axios.post(`http://localhost:5000/accounts/validation/accountname`, { name: selectedFormRecord.ACCNAME, webid: selectedFormRecord.WEBID })
+        setPopupMessage(response.data.msg)
+        setAlertbox(response.data.alert)
+        if (response.data.alert === false) {
+          handlePopup();
+          accountNameRef.current.focus()
+        } else {
+          popupSwitchOff();
+        }
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  const handleSubmit = async() =>{
+    try {
+      const formData = {...selectedFormRecord,
+        PODATE: formatInputDateToMSSQL(selectedFormRecord.PODATE),
+        FDATE: formatInputDateToMSSQL(selectedFormRecord.FDATE),
+        TDATE: formatInputDateToMSSQL(selectedFormRecord.TDATE),
+        DATE: formatInputDateToMSSQL(selectedFormRecord.DATE),
+        LDATE: formatInputDateToMSSQL(selectedFormRecord.LDATE),
+      }
+      const response = await axios.post(`http://localhost:5000/accounts/adding/save`, {data:formData});
+      
     } catch (error) {
       console.log(error)
     }
@@ -144,8 +208,15 @@ const Accounts = () => {
           });
         }
       } else if (name === 'ACCTYPE' || name === 'STATE' || name === 'DISTRICT') {
-        if (name === 'STATE') setselectedFormRecord({...selectedFormRecord, SID:e.target.value,STATE:e.target.options[e.target.selectedIndex].text});
-        if (name === 'DISTRICT') setselectedFormRecord({...selectedFormRecord, ZID:e.target.value,DISTRICT:e.target.options[e.target.selectedIndex].text});
+        if (name === 'ACCTYPE') {
+          setselectedFormRecord({ ...selectedFormRecord, ACCTYPE: e.target.options[e.target.selectedIndex].text });
+        }
+        if (name === 'STATE') {
+          setselectedFormRecord({ ...selectedFormRecord, SID: value, STATE: e.target.options[e.target.selectedIndex].text });
+        }
+        if (name === 'DISTRICT') {
+          setselectedFormRecord({ ...selectedFormRecord, ZID: value, DISTRICT: e.target.options[e.target.selectedIndex].text });
+        }
       } else {
         // Handle other fields normally
         setselectedFormRecord({
@@ -167,10 +238,52 @@ const Accounts = () => {
 
   //---------------------------------------------------Switches-------------------------------------------------------------//
   const addSwitchOn = () => {
+    setselectedFormRecord({
+      WEBID: null,
+      SID: null,
+      ZID: null,
+      ACCTYPE: "",
+      STATE: "",
+      DISTRICT: "",
+      LOCATION: "",
+      ACCNAME: "",
+      NAME: "",
+      CUSTIN: "",
+      ADDRESS: "",
+      CSZ: "",
+      CSZ1: "",
+      BHI: "",
+      YN: "",
+      PODATE: "",
+      FDATE: "",
+      TDATE: "",
+      DATE: "",
+      LDATE: "",
+      BACKYN: "",
+      EWAYBILL: "",
+      AUTOGRNO: "",
+      MITEMYN: "",
+      MULTIUSER: "",
+      DEVPRINT: "",
+      MBCHNO: "",
+      FTLYN: "",
+      BDA: "",
+      MBYN: "",
+      FSYN: "",
+      EWBAPI: "",
+      PERSON: "",
+      PHOFF: "",
+      PHRES: "",
+      MOBILENO: "",
+      FAXNO: "",
+      EMAILID: "",
+      DOMAIN: "",
+    }); // setting all the key values to empty just like before
+    setStates();
+    setStations();
     setIsAdding(true)
     setIsEditing(false)
     setIsSearching(false)
-    //setNewStation('')
   }
   const addSwitchOff = () => {
     setIsAdding(false)
@@ -193,6 +306,18 @@ const Accounts = () => {
   }
   const searchSwitchOff = () => {
     setIsSearching(false)
+  }
+  const popupSwitchOn = () => {
+    setShowHidePopup(true)
+  }
+  const popupSwitchOff = () => {
+    setShowHidePopup(false)
+  }
+  const handlePopup = () => {
+    popupSwitchOn()
+    setTimeout(() => {
+      popupSwitchOff()
+    }, 3000)
   }
   //---------------------------------------------------Switches-------------------------------------------------------------//
 
@@ -256,21 +381,21 @@ const Accounts = () => {
         addSwitchOff()
         editSwitchOff()
         //cleanMessages()
-        //popupSwitchOff()
+        popupSwitchOff()
       }
     };
     document.addEventListener('keydown', handleKeyDown)
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isSearching, isAdding, isEditing, selectedRowIndex, searchedRecords, fullScreen]);
+  }, [isSearching, isAdding, isEditing, selectedRowIndex, searchedRecords, fullScreen,]);
 
 
   return (
     <div className={`w-full overflow-y-auto h-full flex justify-center`}>
       <div className={`w-[1330px] my-auto`}>
 
-        <div ref={divRef} className={`font-bold font-sans pt-2 px-4 my-2 border border-black rounded-md  bg-slate-200`}>
+        <div ref={divRef} className={`relative font-bold font-sans pt-2 px-4 my-2 border border-black rounded-md  bg-slate-200`}>
 
           <div className="w-full flex justify-between">
           {isAdding||isEditing ? (
@@ -280,7 +405,7 @@ const Accounts = () => {
             >Cancel = Escape</button>
             <button className="py-1 px-3 w-44 bg-green-600 hover:bg-green-500 text-white rounded-md "
             onClick={()=>{addSwitchOff();editSwitchOff();}}
-            >Save = Shift+Enter</button>
+            >Save = Page Down</button>
             </div>)
             :(
               <div className="w-1/3 flex space-x-1">
@@ -370,7 +495,14 @@ const Accounts = () => {
 
           </div>
           {/* ------------------------------------------------- Table search Ends here --------------------------------------------- */}
-
+          {showHidePopup ? (
+              <div className="absolute w-full h-full flex justify-center pr-6 items-center">
+                <p className={alertbox ? 'bg-green-500 px-5 py-2 rounded-lg font-bold text-white' : 'bg-red-500 px-5 py-2 rounded-lg font-bold text-white'}>
+                  {popupMessage}
+                </p>
+              </div>
+            ) : null}
+          {/*--------------------------------------------------------------------------------------------------------------------------*/}
           <div className={`${isSearching ? 'hidden' : 'block'} px-6 py-6 mt-2 bg-white border border-black rounded-md shadow-sm shadow-black`}>
             <div>
               <div className="flex w-full">
@@ -379,6 +511,7 @@ const Accounts = () => {
                   <select ref={accTypeRef} onFocus={handleFocus} id={0} name="ACCTYPE" value={selectedFormRecord.ACCTYPE} onChange={handleChange}  
                   disabled={!isAdding && !isEditing}
                   className={`${accountsInputBox} ${helpId === 0 && accountsInputActive} w-56`}>
+                      <option value={accountType.value}>{accountType.option}</option>
                     {accountType && accountType.map((item) => (
                       <option key={item.value} value={item.value}>{item.option}</option>
                     ))}
@@ -386,9 +519,9 @@ const Accounts = () => {
                 </div>
                 <div className="flex w-1/2">
                   <div><p className={`${accountLabels}`}>State <span className="text-red-600">*</span> :</p></div>
-                  <select onFocus={(e)=>{handleFocus(e);getStates();}} id={1} name="STATE" value={selectedFormRecord.SID} onChange={handleChange} disabled={!isAdding && !isEditing}
+                  <select onFocus={(e)=>{handleFocus(e);getStates();}} id={1} value={selectedFormRecord.SID} name="STATE" onChange={handleChange} disabled={!isAdding && !isEditing}
                   className={`${accountsInputBox} ${helpId === 1 && accountsInputActive} w-56`}>
-                    <option value={setselectedFormRecord.SID}>{selectedFormRecord.STATE}</option>
+                    <option value={selectedFormRecord.SID}>{selectedFormRecord.STATE}</option>
                     {states && states.map((row)=>{
                       return <option key={row.SID} value={row.SID} >{row.STATE}</option>
                     })}
@@ -399,10 +532,11 @@ const Accounts = () => {
               <div className="flex w-full mt-0">
                 <div className="flex w-1/2">
                   <div><p className={`${accountLabels}`}>Station <span className="text-red-600">*</span> :</p></div>
-                  <select onFocus={(e)=>{handleFocus(e);selectedFormRecord.SID && getStations(selectedFormRecord.SID);}} id={2} name="DISTRICT" value={selectedFormRecord.ZID} onChange={handleChange}disabled={!isAdding && !isEditing}
-                   className={`${accountsInputBox} ${helpId === 2 && accountsInputActive} w-56`}>
-                    <option value={setselectedFormRecord.ZID}>{selectedFormRecord.DISTRICT}</option>
-                    {stations && stations.map((row)=>{
+                  <select onFocus={(e) => { handleFocus(e); selectedFormRecord.SID && getStations(selectedFormRecord.SID); }} onBlur={handleStationValidation}
+                    ref={stationRef} id={2} value={selectedFormRecord.ZID} name="DISTRICT" onChange={handleChange} disabled={!isAdding && !isEditing}
+                    className={`${accountsInputBox} ${helpId === 2 && accountsInputActive} w-56`}>
+                    <option value={selectedFormRecord.ZID}>{selectedFormRecord.DISTRICT}</option>
+                    {stations && stations.map((row) => {
                       return <option key={row.ZID} value={row.ZID}>{row.DISTRICT}</option>
                     })}
                   </select>
@@ -420,7 +554,8 @@ const Accounts = () => {
               <div className="w-1/2">
                 <div className="flex mt-0">
                   <div className={`${accountLabels}`}>A/c Name <span className="text-red-600">*</span> :</div>
-                  <input onFocus={handleFocus} id={4} name="ACCNAME" value={selectedFormRecord.ACCNAME} onChange={handleChange} disabled={!isAdding && !isEditing}
+                  <input onFocus={handleFocus} onBlur={accountNameValidation} id={4} ref={accountNameRef} name="ACCNAME" 
+                  value={selectedFormRecord.ACCNAME} onChange={handleChange} disabled={!isAdding && !isEditing}
                   className={`${accountsInputBox} ${helpId === 4 && accountsInputActive} w-[75%]`}></input>
                 </div>
                 <div className="flex mt-0">
@@ -641,7 +776,7 @@ const Accounts = () => {
             className={`${isAdding?'bg-green-600 text-white':(isEditing?"bg-blue-600 text-white":'bg-stone-400')} w-[15%] text-center border-r rounded-l-md border-black py-1 `}
             >
               {isAdding?'ADDING':(isEditing?"EDITING":'HELP')}</div>
-            <div className="w-[70%] px-4 py-1 bg-amber-300">{helpId===null?'Information for respective fields will be displayed on Adding or Editing':helpMsg}</div>
+            <div className="w-[70%] px-4 py-1 bg-amber-300">{helpId===null?'Information for respective fields will be displayed on Adding or Editing.':helpMsg}</div>
             <button onClick={toggleFullScreen} className="py-1 w-[15%] bg-neutral-800 text-white rounded-r-md transition-all duration-200 hover:bg-neutral-600">Full Screen</button>
           </div>
 
