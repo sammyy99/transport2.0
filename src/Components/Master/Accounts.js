@@ -45,7 +45,7 @@ const Accounts = () => {
     FAXNO: "",
     EMAILID: "",
     DOMAIN: "",
-  }); console.log(selectedFormRecord)  // selected account record from table will be updated here
+  }); //console.log(selectedFormRecord)  // selected account record from table will be updated here
 
   const [states,setStates] = useState();
   const [stations,setStations] = useState();
@@ -62,7 +62,7 @@ const Accounts = () => {
   const [helpId, setHelpId] = useState(null); // for getting help id
   const [helpMsg, setHelpMsg] = useState('') // for getting msg
 
-  const [fullScreen, setFullScreen] = useState(false); console.log(fullScreen)
+  const [fullScreen, setFullScreen] = useState(false); //console.log(fullScreen)
 
   const [popupMessage, setPopupMessage] = useState("") // to update popup message 
   const [showHidePopup, setShowHidePopup] = useState(false) // to show or hide popup
@@ -124,16 +124,16 @@ const Accounts = () => {
       console.log(error)
     }
   }
-  const accountNameValidation = async () => {
+  const accountNameValidation = async (data) => {
     try {
-      if (selectedFormRecord.ACCNAME === '') {
+      if (data.ACCNAME.trim() === '') {
         setAlertbox(false)
         setPopupMessage('Account name cannot be blank')
         handlePopup();
         accountNameRef.current.focus()
       } else {
         if (isAdding) {
-          const response = await axios.post(`http://localhost:5000/accounts/validation/accountname`, { name: selectedFormRecord.ACCNAME, webid: 0 })
+          const response = await axios.post(`http://localhost:5000/accounts/validation/accountname`, { name: data.ACCNAME, webid: 0 })
           setPopupMessage(response.data.msg)
           setAlertbox(response.data.alert)
           if (response.data.alert === false) {
@@ -143,7 +143,7 @@ const Accounts = () => {
             popupSwitchOff();
           }
         } else {
-          const response = await axios.post(`http://localhost:5000/accounts/validation/accountname`, { name: selectedFormRecord.ACCNAME, webid: selectedFormRecord.WEBID })
+          const response = await axios.post(`http://localhost:5000/accounts/validation/accountname`, { name: data.ACCNAME, webid: data.WEBID })
           setPopupMessage(response.data.msg)
           setAlertbox(response.data.alert)
           if (response.data.alert === false) {
@@ -158,35 +158,41 @@ const Accounts = () => {
       console.log(error)
     }
   }
-  const handleSubmit = async() =>{                          //----------------- Hnadling saving of Record ------------------
+  const handleSubmit = async(data) =>{  //Handling saving of Record and this data argument holds the most recent change done by harami user(changed value and clicked on save)
     try {
-      const formData = {...selectedFormRecord,
-        PODATE: formatInputDateToMSSQL(selectedFormRecord.PODATE),
-        FDATE: formatInputDateToMSSQL(selectedFormRecord.FDATE),
-        TDATE: formatInputDateToMSSQL(selectedFormRecord.TDATE),
-        DATE: formatInputDateToMSSQL(selectedFormRecord.DATE),
-        LDATE: formatInputDateToMSSQL(selectedFormRecord.LDATE),
+      const formData = {...data,
+        PODATE: formatInputDateToMSSQL(data.PODATE),
+        FDATE: formatInputDateToMSSQL(data.FDATE),
+        TDATE: formatInputDateToMSSQL(data.TDATE),
+        DATE: formatInputDateToMSSQL(data.DATE),
+        LDATE: formatInputDateToMSSQL(data.LDATE),
       }
-      if (formData.ACCTYPE === '' || formData.ACCTYPE === '' || formData.STATE === '' || formData.DISTRICT === '') {
+      console.log(formData)
+      if (formData.ACCTYPE.trim() === '' || formData.ACCNAME.trim() === '' || formData.STATE.trim() === '' || formData.DISTRICT.trim() === '') {
         setAlertbox(false)
         setPopupMessage('Fill all the mandatory fields before saving the record')
         handlePopup();
         accTypeRef.current.focus()
       } else {
-        if (isAdding) {
-          const response = await axios.post(`http://localhost:5000/accounts/add/submit`, {data:formData});
-          setPopupMessage(response.data.msg);
-          setAlertbox(response.data.alert);
-          handlePopup();
-          accTypeRef.current.focus();
-          response.data.alert && addSwitchOff();
+        accountNameValidation(formData) // Have to call this here because of harami user changing the value after on blur validation and direct click on submit 
+        if (alertbox === true) {  // Saving and editing of data will only be done if alert status is true on checking/calling accountNameValidation
+          if (isAdding) {
+            const response = await axios.post(`http://localhost:5000/accounts/add/submit`, {data:formData});
+            setPopupMessage(response.data.msg);
+            setAlertbox(response.data.alert);
+            handlePopup();
+            accTypeRef.current.focus();
+            response.data.alert && addSwitchOff();
+          } else {
+            const response = await axios.post(`http://localhost:5000/accounts/edit/submit`, {data:formData});
+            setPopupMessage(response.data.msg);
+            setAlertbox(response.data.alert);
+            handlePopup();
+            accTypeRef.current.focus();
+            response.data.alert && editSwitchOff();
+          }
         } else {
-          const response = await axios.post(`http://localhost:5000/accounts/edit/submit`, {data:formData});
-          setPopupMessage(response.data.msg);
-          setAlertbox(response.data.alert);
-          handlePopup();
-          accTypeRef.current.focus();
-          response.data.alert && editSwitchOff();
+
         }
       }      
     } catch (error) {
@@ -441,7 +447,7 @@ const Accounts = () => {
             onClick={()=>{addSwitchOff();editSwitchOff();}}
             >Cancel = Escape</button>
             <button className="py-1 px-3 w-44 bg-green-600 hover:bg-green-500 text-white rounded-md "
-            onClick={()=>{handleSubmit();}}
+            onClick={()=>{handleSubmit(selectedFormRecord);}}
             >Save = Page Down</button>
             </div>)
             :(
@@ -451,7 +457,7 @@ const Accounts = () => {
               >Add</button>
               <button className={`py-1 px-3 w-20 ${isEditing?"shadow-md shadow-black":""} ${selectedFormRecord.WEBID === 0? disabledButton:'bg-blue-600 hover:bg-blue-500 text-white'}  rounded-md `}
               onClick={editSwitchOn}
-              disabled={selectedFormRecord.WEBID !== 0?false:true}
+              disabled={selectedFormRecord.WEBID === 0?true:false}
               >Edit</button>
               <button className={`${selectedFormRecord.WEBID === 0?disabledButton:(isAdding || isSearching ? disabledButton : 'bg-red-600 hover:bg-red-500 text-white')} py-1 px-3 w-20  rounded-md transition-all duration-200`}
               disabled={selectedFormRecord.WEBID === 0?true:(isAdding || isSearching ? true : false)}
@@ -463,7 +469,7 @@ const Accounts = () => {
             
             <div className="w-1/3 flex justify-end space-x-1">
               <button className="py-1 px-3 w-20 bg-neutral-800 text-white rounded-md transition-all duration-200 hover:bg-neutral-600"
-                onClick={() => { getAllAccounts('NAME'); searchSwitchOn(); setWhichSearch('NAME'); }}
+                onClick={() => { getAllAccounts('ACCNAME'); searchSwitchOn(); setWhichSearch('ACCNAME'); }}
               >Name</button>
               <button className="py-1 px-3 w-20 bg-neutral-800 text-white rounded-md transition-all duration-200 hover:bg-neutral-600"
                 onClick={() => { getAllAccounts('DISTRICT'); searchSwitchOn(); setWhichSearch('DISTRICT') }}
@@ -478,7 +484,7 @@ const Accounts = () => {
             <div className="h-full flex flex-col justify-between">
               <div className="w-full">
                 <div className="flex border-b py-1 border-black bg-slate-700 text-white rounded-t-md">
-                  {whichSearch === 'NAME' ? <>
+                  {whichSearch === 'ACCNAME' ? <>
                     <div className="w-6/12 pl-2 ">Account Name</div>
                     <div className="w-3/12 pl-2 ">Station</div>
                     <div className="w-3/12 ">Location</div>
@@ -497,13 +503,13 @@ const Accounts = () => {
                           onClick={() => { handleRecordSelection(row, index) }}
                           onDoubleClick={() => { searchSwitchOff() }}
                         >
-                          {whichSearch === 'NAME' ? <>
-                            <td className="w-6/12 border-r border-black pl-2">{row.NAME}</td>
+                          {whichSearch === 'ACCNAME' ? <>
+                            <td className="w-6/12 border-r border-black pl-2">{row.ACCNAME}</td>
                             <td className="w-3/12 border-r border-black pl-2">{row.DISTRICT}</td>
                             <td className="w-3/12 pl-2">{row.LOCATION}</td>
                           </> : <>
                             <td className="w-3/12 border-r border-black pl-2">{row.DISTRICT}</td>
-                            <td className="w-6/12 border-r border-black pl-2">{row.NAME}</td>
+                            <td className="w-6/12 border-r border-black pl-2">{row.ACCNAME}</td>
                             <td className="w-3/12 pl-2">{row.LOCATION}</td>
                           </>}
                         </tr>
@@ -592,7 +598,7 @@ const Accounts = () => {
               <div className="w-1/2">
                 <div className="flex mt-0">
                   <div className={`${accountLabels}`}>A/c Name <span className="text-red-600">*</span> :</div>
-                  <input onFocus={handleFocus} onBlur={accountNameValidation} id={4} ref={accountNameRef} name="ACCNAME" 
+                  <input onFocus={handleFocus} onBlur={()=>{accountNameValidation(selectedFormRecord)}} id={4} ref={accountNameRef} name="ACCNAME" 
                   value={selectedFormRecord.ACCNAME} onChange={handleChange} disabled={!isAdding && !isEditing}
                   className={`${accountsInputBox} ${helpId === 4 && accountsInputActive} w-[75%]`}></input>
                 </div>
