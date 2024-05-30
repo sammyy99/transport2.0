@@ -191,6 +191,14 @@ const Accounts = () => {
             [name]: value.toUpperCase(),
           });
         }
+      }else if (name === 'BDA') {
+        // Allow only 'B', 'H', 'I', 'A', 'C', or an empty string
+        if (value.toUpperCase() === 'B' || value.toUpperCase() === 'D' || value === 'D' || value === '') {
+          setselectedFormRecord({
+            ...selectedFormRecord,
+            [name]: value.toUpperCase(),
+          });
+        }
       } else if (name === 'BHI') {
         // Allow only 'B', 'H', 'I', 'A', 'C', or an empty string
         if (['B', 'H', 'I', 'A', 'C', ''].includes(value.toUpperCase())) {
