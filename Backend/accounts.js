@@ -181,20 +181,48 @@ router.post("/accounts/edit/submit", async (req, res) => {   // Saving formRecor
       EMAILID,
       DOMAIN
     } = req.body.data;
-    
-    const query = `
-      UPDATE WEBID2 SET
-        ACCNAME = @ACCNAME, ADDRESS = @ADDRESS, BACKYN = @BACKYN, BDA = @BDA, BHI = @BHI, CUSTIN = @CUSTIN, CSZ = @CSZ, CSZ1 = @CSZ1, DATE = @DATE, DEVPRINT = @DEVPRINT, DISTRICT = @DISTRICT, DOMAIN = @DOMAIN, EMAILID = @EMAILID, EWAYBILL = @EWAYBILL, EWBAPI = @EWBAPI, FAXNO = @FAXNO, FDATE = @FDATE, FSYN = @FSYN, FTLYN = @FTLYN, LOCATION = @LOCATION, LDATE = @LDATE, MITEMYN = @MITEMYN, MBCHNO = @MBCHNO, MBYN = @MBYN, MULTIUSER = @MULTIUSER, MOBILENO = @MOBILENO, NAME = @NAME, PERSON = @PERSON, PHOFF = @PHOFF, PHRES = @PHRES, PODATE = @PODATE, SID = @SID, STATE = @STATE, TDATE = @TDATE, YN = @YN, ZID = @ZID, ACCTYPE = @ACCTYPE, AUTOGRNO = @AUTOGRNO
-      WHERE WEBID = @WEBID
-    `;
-    
-    const result = await sql.query({
-      query,
-      params: {
-        ACCNAME, ADDRESS, BACKYN, BDA, BHI, CUSTIN, CSZ, CSZ1, DATE, DEVPRINT, DISTRICT, DOMAIN, EMAILID, EWAYBILL, EWBAPI, FAXNO, FDATE, FSYN, FTLYN, LOCATION, LDATE, MITEMYN, MBCHNO, MBYN, MULTIUSER, MOBILENO, NAME, PERSON, PHOFF, PHRES, PODATE, SID, STATE, TDATE, YN, ZID, ACCTYPE, AUTOGRNO, WEBID
-      }
-    });
-    
+    // Helper function to handle null values
+    const formatValue = (value) => (value === null || value === '' ? 'null' : `'${value}'`);
+    const result =await sql.query(`UPDATE WEBID2
+    SET SID = ${SID},
+    ZID = ${ZID},
+    ACCTYPE = '${ACCTYPE}',
+    STATE = '${STATE}',
+    DISTRICT = '${DISTRICT}',
+    LOCATION = '${LOCATION}',
+    ACCNAME = '${ACCNAME}',
+    NAME = '${NAME}',
+    CUSTIN = '${CUSTIN}',
+    ADDRESS = '${ADDRESS}',
+    CSZ = '${CSZ}',
+    CSZ1 = '${CSZ1}',
+    BHI = '${BHI}',
+    YN = '${YN}',
+    PODATE = ${formatValue(PODATE)},
+    FDATE = ${formatValue(FDATE)},
+    TDATE = ${formatValue(TDATE)},
+    DATE = ${formatValue(DATE)},
+    LDATE = ${formatValue(LDATE)},
+    BACKYN = '${BACKYN}',
+    EWAYBILL = '${EWAYBILL}',
+    AUTOGRNO = '${AUTOGRNO}',
+    MITEMYN = '${MITEMYN}',
+    MULTIUSER = '${MULTIUSER}',
+    DEVPRINT = '${DEVPRINT}',
+    MBCHNO = '${MBCHNO}',
+    FTLYN = '${FTLYN}',
+    BDA = '${BDA}',
+    MBYN = '${MBYN}',
+    FSYN = '${FSYN}',
+    EWBAPI = '${EWBAPI}',
+    PERSON = '${PERSON}',
+    PHOFF = '${PHOFF}',
+    PHRES = '${PHRES}',
+    MOBILENO = '${MOBILENO}',
+    FAXNO = '${FAXNO}',
+    EMAILID = '${EMAILID}',
+    DOMAIN = '${DOMAIN}'
+    WHERE WEBID = ${WEBID};`)
     if (result.rowsAffected[0] > 0) {
       res.status(200).json({ msg: "✅ Account updated successfully", alert: true });
     } else {
@@ -205,6 +233,5 @@ router.post("/accounts/edit/submit", async (req, res) => {   // Saving formRecor
     console.log(error);
   }
 });
-
 
 export default router;
