@@ -6,7 +6,7 @@ import { accountLabels, accountsInputBox, accountsInputActive, disabledButton } 
 const Accounts = () => {
 
   const [selectedFormRecord, setselectedFormRecord] = useState({
-    WEBID: null,
+    WEBID: 0,
     SID: null,
     ZID: null,
     ACCTYPE: "",
@@ -71,6 +71,7 @@ const Accounts = () => {
   const searchRef = useRef()
   const divRef = useRef(null);  // Full screen div
   const accTypeRef = useRef();
+  const stateRef = useRef();
   const stationRef = useRef();
   const accountNameRef = useRef();
 
@@ -115,7 +116,7 @@ const Accounts = () => {
       await response.data.alert ? setAlertbox(true) : setAlertbox(false)  // setting alertbox status true or false so that i can change colors.
       if (response.data.alert === false) {
         handlePopup();
-        stationRef.current.focus()
+        stateRef.current.focus()
       }else{
         popupSwitchOff();
       }
@@ -125,32 +126,39 @@ const Accounts = () => {
   }
   const accountNameValidation = async () => {
     try {
-      if (isAdding) {
-        const response = await axios.post(`http://localhost:5000/accounts/validation/accountname`, { name: selectedFormRecord.ACCNAME, webid: 0 })
-        setPopupMessage(response.data.msg)
-        setAlertbox(response.data.alert)
-        if (response.data.alert === false) {
-          handlePopup();
-          accountNameRef.current.focus()
-        } else {
-          popupSwitchOff();
-        }
+      if (selectedFormRecord.ACCNAME === '') {
+        setAlertbox(false)
+        setPopupMessage('Account name cannot be blank')
+        handlePopup();
+        accountNameRef.current.focus()
       } else {
-        const response = await axios.post(`http://localhost:5000/accounts/validation/accountname`, { name: selectedFormRecord.ACCNAME, webid: selectedFormRecord.WEBID })
-        setPopupMessage(response.data.msg)
-        setAlertbox(response.data.alert)
-        if (response.data.alert === false) {
-          handlePopup();
-          accountNameRef.current.focus()
+        if (isAdding) {
+          const response = await axios.post(`http://localhost:5000/accounts/validation/accountname`, { name: selectedFormRecord.ACCNAME, webid: 0 })
+          setPopupMessage(response.data.msg)
+          setAlertbox(response.data.alert)
+          if (response.data.alert === false) {
+            handlePopup();
+            accountNameRef.current.focus()
+          } else {
+            popupSwitchOff();
+          }
         } else {
-          popupSwitchOff();
+          const response = await axios.post(`http://localhost:5000/accounts/validation/accountname`, { name: selectedFormRecord.ACCNAME, webid: selectedFormRecord.WEBID })
+          setPopupMessage(response.data.msg)
+          setAlertbox(response.data.alert)
+          if (response.data.alert === false) {
+            handlePopup();
+            accountNameRef.current.focus()
+          } else {
+            popupSwitchOff();
+          }
         }
       }
     } catch (error) {
       console.log(error)
     }
   }
-  const handleSubmit = async() =>{
+  const handleSubmit = async() =>{                          //----------------- Hnadling saving of Record ------------------
     try {
       const formData = {...selectedFormRecord,
         PODATE: formatInputDateToMSSQL(selectedFormRecord.PODATE),
@@ -159,8 +167,28 @@ const Accounts = () => {
         DATE: formatInputDateToMSSQL(selectedFormRecord.DATE),
         LDATE: formatInputDateToMSSQL(selectedFormRecord.LDATE),
       }
-      const response = await axios.post(`http://localhost:5000/accounts/adding/save`, {data:formData});
-      
+      if (formData.ACCTYPE === '' || formData.ACCTYPE === '' || formData.STATE === '' || formData.DISTRICT === '') {
+        setAlertbox(false)
+        setPopupMessage('Fill all the mandatory fields before saving the record')
+        handlePopup();
+        accTypeRef.current.focus()
+      } else {
+        if (isAdding) {
+          const response = await axios.post(`http://localhost:5000/accounts/add/submit`, {data:formData});
+          setPopupMessage(response.data.msg);
+          setAlertbox(response.data.alert);
+          handlePopup();
+          accTypeRef.current.focus();
+          response.data.alert && addSwitchOff();
+        } else {
+          const response = await axios.post(`http://localhost:5000/accounts/edit/submit`, {data:formData});
+          setPopupMessage(response.data.msg);
+          setAlertbox(response.data.alert);
+          handlePopup();
+          accTypeRef.current.focus();
+          response.data.alert && editSwitchOff();
+        }
+      }      
     } catch (error) {
       console.log(error)
     }
@@ -248,7 +276,7 @@ const Accounts = () => {
   //---------------------------------------------------Switches-------------------------------------------------------------//
   const addSwitchOn = () => {
     setselectedFormRecord({
-      WEBID: null,
+      WEBID: 0,
       SID: null,
       ZID: null,
       ACCTYPE: "",
@@ -352,7 +380,7 @@ const Accounts = () => {
 
   const formatInputDateToMSSQL = (dateString) => { // Formatting JSX Date format to MSSQL Date format
     if (!dateString) return null;
-    return dateString; // YYYY-MM-DD is already in the correct format
+    return new Date(dateString).toISOString().slice(0, 10); // Ensures YYYY-MM-DD format
   };
 
 
@@ -413,7 +441,7 @@ const Accounts = () => {
             onClick={()=>{addSwitchOff();editSwitchOff();}}
             >Cancel = Escape</button>
             <button className="py-1 px-3 w-44 bg-green-600 hover:bg-green-500 text-white rounded-md "
-            onClick={()=>{addSwitchOff();editSwitchOff();}}
+            onClick={()=>{handleSubmit();}}
             >Save = Page Down</button>
             </div>)
             :(
@@ -421,12 +449,12 @@ const Accounts = () => {
               <button className={`py-1 px-3 w-20 ${isAdding?"shadow-md shadow-black":""} bg-green-600 hover:bg-green-500 text-white rounded-md `} 
               onClick={addSwitchOn}
               >Add</button>
-              <button className={`py-1 px-3 w-20 ${isEditing?"shadow-md shadow-black":""} ${selectedFormRecord.WEBID === null? disabledButton:'bg-blue-600 hover:bg-blue-500 text-white'}  rounded-md `}
+              <button className={`py-1 px-3 w-20 ${isEditing?"shadow-md shadow-black":""} ${selectedFormRecord.WEBID === 0? disabledButton:'bg-blue-600 hover:bg-blue-500 text-white'}  rounded-md `}
               onClick={editSwitchOn}
-              disabled={selectedFormRecord.WEBID !== null?false:true}
+              disabled={selectedFormRecord.WEBID !== 0?false:true}
               >Edit</button>
-              <button className={`${selectedFormRecord.WEBID === null?disabledButton:(isAdding || isSearching ? disabledButton : 'bg-red-600 hover:bg-red-500 text-white')} py-1 px-3 w-20  rounded-md transition-all duration-200`}
-              disabled={selectedFormRecord.WEBID === null?true:(isAdding || isSearching ? true : false)}
+              <button className={`${selectedFormRecord.WEBID === 0?disabledButton:(isAdding || isSearching ? disabledButton : 'bg-red-600 hover:bg-red-500 text-white')} py-1 px-3 w-20  rounded-md transition-all duration-200`}
+              disabled={selectedFormRecord.WEBID === 0?true:(isAdding || isSearching ? true : false)}
               >Delete</button>
             </div>
             )}
@@ -518,7 +546,7 @@ const Accounts = () => {
                 <div className="flex w-1/2">
                   <div><p className={`${accountLabels}`}>A/C Type <span className="text-red-600">*</span> :</p></div>
                   <select ref={accTypeRef} onFocus={handleFocus} id={0} name="ACCTYPE" value={selectedFormRecord.ACCTYPE} onChange={handleChange}  
-                  disabled={!isAdding && !isEditing}
+                  disabled={!isAdding && !isEditing} 
                   className={`${accountsInputBox} ${helpId === 0 && accountsInputActive} w-56`}>
                       <option value={selectedFormRecord.ACCTYPE}>{selectedFormRecord.ACCTYPE}</option>
                     {accountType && accountType.map((item) => (
@@ -528,7 +556,8 @@ const Accounts = () => {
                 </div>
                 <div className="flex w-1/2">
                   <div><p className={`${accountLabels}`}>State <span className="text-red-600">*</span> :</p></div>
-                  <select onFocus={(e)=>{handleFocus(e);getStates();}} id={1} value={selectedFormRecord.SID} name="STATE" onChange={handleChange} disabled={!isAdding && !isEditing}
+                  <select onFocus={(e)=>{handleFocus(e);getStates();}} id={1} ref={stateRef}
+                   value={selectedFormRecord.SID} name="STATE" onChange={handleChange} disabled={!isAdding && !isEditing}
                   className={`${accountsInputBox} ${helpId === 1 && accountsInputActive} w-56`}>
                     <option value={selectedFormRecord.SID}>{selectedFormRecord.STATE}</option>
                     {states && states.map((row)=>{
