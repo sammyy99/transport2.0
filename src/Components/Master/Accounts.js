@@ -234,6 +234,7 @@ const Accounts = () => {
     const id = parseInt(e.target.id, 10);  // Ensure `id` is an integer if your IDs are numbers
     setHelpId(id);
     setHelpMsg(help[id].msg);
+    isAdding && e.target.click();
   }
 
   //---------------------------------------------------Switches-------------------------------------------------------------//
@@ -511,7 +512,7 @@ const Accounts = () => {
                   <select ref={accTypeRef} onFocus={handleFocus} id={0} name="ACCTYPE" value={selectedFormRecord.ACCTYPE} onChange={handleChange}  
                   disabled={!isAdding && !isEditing}
                   className={`${accountsInputBox} ${helpId === 0 && accountsInputActive} w-56`}>
-                      <option value={accountType.value}>{accountType.option}</option>
+                      <option value={selectedFormRecord.ACCTYPE}>{selectedFormRecord.ACCTYPE}</option>
                     {accountType && accountType.map((item) => (
                       <option key={item.value} value={item.value}>{item.option}</option>
                     ))}

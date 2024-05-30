@@ -67,9 +67,9 @@ router.post("/accounts/validation/accountname",async (req,res)=>{  // to validat
     const {name, webid} = req.body;
     const result = await sql.query(`select * from WEBID2 where ACCNAME = '${name}' and WEBID != ${webid}`)
     if (result.recordset.length>0) {
-      res.status(200).json({msg: "Account name already exist, use different name", alert:false})
+      res.status(200).json({msg: "Account name already exist, use different name", alert:false, nameValid:false})
     } else {
-      res.status(200).json({msg: "Valid Account name",alert:true})
+      res.status(200).json({msg: "Valid Account name", alert:true, nameValid:true})
     }
   } catch (error) {
     res.status(500).json({message:"Internal server error (Getting account validation from db failed)",err:error})
