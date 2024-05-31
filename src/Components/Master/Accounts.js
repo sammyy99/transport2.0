@@ -466,7 +466,7 @@ const Accounts = () => {
     <div className={`w-full overflow-y-auto h-full flex justify-center`}>
       <div className={`w-[1330px] my-auto`}>
 
-        <div ref={divRef} className={`relative font-bold font-sans pt-2 px-4 my-2 border border-black rounded-md  bg-slate-200`}>
+        <div ref={divRef} className={`relative font-bold font-sans pt-2 px-4 my-2 border border-black rounded-md shadow-md shadow-black  bg-slate-200`}>
 
           <div className="w-full flex justify-between">
           {isAdding||isEditing ? (
