@@ -407,7 +407,7 @@ const handleEnterKeyDown = (event) => {  // Event listener for Enter key navigat
     }
   }
 };
-
+ 
   useEffect(() => {
     if (isSearching) {
       searchRef.current?.focus();
@@ -417,11 +417,11 @@ const handleEnterKeyDown = (event) => {  // Event listener for Enter key navigat
     }
   
     const handleKeyDown = (event) => {
-      if (event.key === 'ArrowUp') {
+      if (event.key === 'ArrowUp' && isSearching) {
         setSelectedRowIndex((prevIndex) => {
           return prevIndex > 0 ? prevIndex - 1 : 0;
         });
-      } else if (event.key === 'ArrowDown') {
+      } else if (event.key === 'ArrowDown' && isSearching) {
         setSelectedRowIndex((prevIndex) => {
           return prevIndex < searchedRecords.length - 1 ? prevIndex + 1 : searchedRecords.length - 1;
         });
