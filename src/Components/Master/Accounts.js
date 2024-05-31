@@ -395,9 +395,18 @@ const Accounts = () => {
     if (event.key === 'F2') {
       if ((isAdding || isEditing) && saveRef.current) {
         saveRef.current.click();
-      }
-    }
+      }}
   };
+const handleEnterKeyDown = (event) => {  // Event listener for Enter key navigation between input fields
+  if (!isSearching && event.key === 'Enter') {
+    event.preventDefault();
+    const formElements = Array.from(divRef.current.querySelectorAll('input, select'));
+    const index = formElements.indexOf(document.activeElement);
+    if (index > -1 && index < formElements.length - 1) {
+      formElements[index + 1].focus();
+    }
+  }
+};
 
   useEffect(() => {
     if (isSearching) {
@@ -438,9 +447,11 @@ const Accounts = () => {
   
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('keydown', handleSubmitKeyPress);  // exception for submit  key
+    document.addEventListener('keydown', handleEnterKeyDown);   // exception for navigation on enter
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keydown', handleSubmitKeyPress); // exception for submit key
+      document.removeEventListener('keydown', handleEnterKeyDown);  // exception for navigation on enter
     };
   }, [isSearching, isAdding, isEditing, selectedRowIndex, searchedRecords, fullScreen]);  
 

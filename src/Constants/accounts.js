@@ -92,14 +92,3 @@ useEffect(() => {
 }, [isSearching, selectedRowIndex, searchedRecords, helpId, fullScreen]);
  */
 
-/*const handleSubmit = async (e) => {
-  e.preventDefault();
-  const dataToSave = {
-    ...formData,
-    PODATE: formatInputDateToMSSQL(formData.PODATE),
-    FDATE: formatInputDateToMSSQL(formData.FDATE),
-    TDATE: formatInputDateToMSSQL(formData.TDATE),
-    // format other date fields if any...
-  };
-  await axios.post('http://localhost:5000/account', dataToSave);
-};*/
