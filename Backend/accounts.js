@@ -123,9 +123,14 @@ router.post("/accounts/add/submit", async (req, res) => {  // saving FormRecord 
 
     // Helper function to handle null values
     const formatValue = (value) => (value === null || value === '' ? 'null' : `'${value}'`);
-    const result = await sql.query(`INSERT INTO WEBID2 (SID,ZID,ACCTYPE,STATE,DISTRICT,LOCATION,ACCNAME,NAME,CUSTIN,ADDRESS,CSZ,CSZ1,BHI,YN,PODATE,FDATE,TDATE,DATE,LDATE,BACKYN,EWAYBILL,AUTOGRNO,MITEMYN,MULTIUSER,DEVPRINT,MBCHNO,FTLYN,BDA,MBYN,FSYN,EWBAPI,PERSON,PHOFF,PHRES,MOBILENO,FAXNO,EMAILID,DOMAIN,WEBID)
-                                                VALUES (${SID},${ZID},'${ACCTYPE}','${STATE}','${DISTRICT}','${LOCATION}','${ACCNAME}','${NAME}','${CUSTIN}','${ADDRESS}','${CSZ}','${CSZ1}','${BHI}','${YN}',${formatValue(PODATE)},${formatValue(FDATE)},${formatValue(TDATE)},${formatValue(DATE)},${formatValue(LDATE)},'${BACKYN}','${EWAYBILL}','${AUTOGRNO}','${MITEMYN}','${MULTIUSER}','${DEVPRINT}','${MBCHNO}','${FTLYN}','${BDA}','${MBYN}','${FSYN}','${EWBAPI}','${PERSON}','${PHOFF}','${PHRES}','${MOBILENO}','${FAXNO}','${EMAILID}','${DOMAIN}',(SELECT MAX(WEBID) + 1 FROM WEBID2))`
-                                  )
+    const result = await sql.query(`
+    DECLARE @nextWEBID INT;
+    SELECT @nextWEBID = ISNULL(MAX(CAST(WEBID AS INT)), 0) + 1 FROM WEBID2;
+    DECLARE @formattedWEBID VARCHAR(6);
+    SET @formattedWEBID = RIGHT('000000' + CAST(@nextWEBID AS VARCHAR(6)), 6);
+    INSERT INTO WEBID2 (SID, ZID, ACCTYPE, STATE, DISTRICT, LOCATION, ACCNAME, NAME, CUSTIN, ADDRESS, CSZ, CSZ1, BHI, YN, PODATE, FDATE, TDATE, DATE, LDATE, BACKYN, EWAYBILL, AUTOGRNO, MITEMYN, MULTIUSER, DEVPRINT, MBCHNO, FTLYN, BDA, MBYN, FSYN, EWBAPI, PERSON, PHOFF, PHRES, MOBILENO, FAXNO, EMAILID, DOMAIN, WEBID)
+    VALUES (${SID}, ${ZID}, '${ACCTYPE}', '${STATE}', '${DISTRICT}', '${LOCATION}', '${ACCNAME}', '${NAME}', '${CUSTIN}', '${ADDRESS}', '${CSZ}', '${CSZ1}', '${BHI}', '${YN}', ${formatValue(PODATE)}, ${formatValue(FDATE)}, ${formatValue(TDATE)}, ${formatValue(DATE)}, ${formatValue(LDATE)}, '${BACKYN}', '${EWAYBILL}', '${AUTOGRNO}', '${MITEMYN}', '${MULTIUSER}', '${DEVPRINT}', '${MBCHNO}', '${FTLYN}', '${BDA}', '${MBYN}', '${FSYN}', '${EWBAPI}', '${PERSON}', '${PHOFF}', '${PHRES}', '${MOBILENO}', '${FAXNO}', '${EMAILID}', '${DOMAIN}', @formattedWEBID);
+  `)
     if (result.rowsAffected[0] > 0) {
       res.status(200).json({ msg: "✅ Account saved successfully", alert: true });
     } else {
