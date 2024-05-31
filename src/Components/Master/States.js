@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from 'axios'
+import { backendIP } from "../../Constants/main";
 
 const States = () => {
 
@@ -41,19 +42,19 @@ const States = () => {
 
  //---------------------------Fetch Functions---------------------------
   const getState = async ()=>{
-      const response = await axios.get(`http://localhost:5000/allstate`)
+      const response = await axios.get(`${backendIP}/allstate`)
        setSearchedStates(response.data)
   }
 
   const getSearchedStates =async (value)=>{
-        const response = await axios.get(`http://localhost:5000/state/searchState/${value}`) 
+        const response = await axios.get(`${backendIP}/state/searchState/${value}`) 
         setSearchedStates(response.data)
   }
  //---------------------------Fetch Functions---------------------------
 
  //--------------------------Add and Edit handling----------------------------
  const handleAddStateCheck = async (col)=>{
-      const response = await axios.post(`http://localhost:5000/state/addEdit/check`,{localSid:0,name:newStateName,sname:newShortName,typeOf:col})
+      const response = await axios.post(`${backendIP}/state/addEdit/check`,{localSid:0,name:newStateName,sname:newShortName,typeOf:col})
       //console.log(response.data)
       if (col==="state") {
         response.data.msg && setDisplayMessageState(response.data.msg)
@@ -65,7 +66,7 @@ const States = () => {
       }    
  }
  const handleEditStateCheck = async (col)=>{
-      const response = await axios.post(`http://localhost:5000/state/addEdit/check`,{localSid:sid,name:editStateName,sname:editShortName,typeOf:col,edit:true})
+      const response = await axios.post(`${backendIP}/state/addEdit/check`,{localSid:sid,name:editStateName,sname:editShortName,typeOf:col,edit:true})
       //console.log(response.data)
       if (col==="state") {
         response.data.msg && setDisplayMessageState(response.data.msg)
@@ -83,7 +84,7 @@ const States = () => {
 
  const handleSaveOnAdd = async ()=>{
   
-    const response = await axios.post(`http://localhost:5000/state/add/save`,{state:newStateName,sname:newShortName})
+    const response = await axios.post(`${backendIP}/state/add/save`,{state:newStateName,sname:newShortName})
     setPopupMessage(response.data.msg)
     addStateSwitchOff()
     await response.data.alert?setAlertbox(true) : setAlertbox(false)  // setting alertbox status true or false so that i can change colors.
@@ -91,7 +92,7 @@ const States = () => {
  }
 
  const handleSaveOnEdit = async () =>{
-  const response = await axios.post(`http://localhost:5000/state/edit/save`,{state:editStateName,sname:editShortName,sid:sid})
+  const response = await axios.post(`${backendIP}/state/edit/save`,{state:editStateName,sname:editShortName,sid:sid})
   setPopupMessage(response.data.msg);
   editStateSwitchOff();
   await response.data.alert?setAlertbox(true) : setAlertbox(false)  // setting alertbox status true or false so that i can change colors.
@@ -173,7 +174,7 @@ const States = () => {
   const handleDelete = async (id)=>{
     const delID = id
     setState(); // setting this so that on click on delete that row gets removed from there and user have to select new row
-    const response = await axios.delete(`http://localhost:5000/state/delete/${delID}`)
+    const response = await axios.delete(`${backendIP}/state/delete/${delID}`)
     setPopupMessage(response.data.msg)
     await response.data.alert?setAlertbox(true) : setAlertbox(false)  // setting alertbox status true or false so that i can change colors.
     handlePopup()

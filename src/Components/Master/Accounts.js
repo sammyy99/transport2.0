@@ -2,9 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from 'axios';
 import { accountType, help } from "../../Constants/accounts";
 import { accountLabels, accountsInputBox, accountsInputActive, disabledButton } from "../../Constants/css";
+import { backendIP } from "../../Constants/main";
 
 const Accounts = () => {
-
   const [selectedFormRecord, setselectedFormRecord] = useState({
     WEBID: 0,
     SID: null,
@@ -79,7 +79,7 @@ const Accounts = () => {
 
   const getAllAccounts = async (order) => {
     try {
-      const response = await axios.get(`http://localhost:5000/accounts/allaccounts/${order}`);
+      const response = await axios.get(`${backendIP}/accounts/allaccounts/${order}`);
       setsearchedRecords(response.data);
     } catch (error) {
       console.log(error)
@@ -87,7 +87,7 @@ const Accounts = () => {
   };
   const getAccountOnSearch = async (value, type) => {
     try {
-      const response = await axios.post(`http://localhost:5000/accounts/searchaccounts`, { searchedValue: value, searchBy: type });
+      const response = await axios.post(`${backendIP}/accounts/searchaccounts`, { searchedValue: value, searchBy: type });
       setsearchedRecords(response.data);
     } catch (error) {
       console.log(error)
@@ -95,7 +95,7 @@ const Accounts = () => {
   }
   const getStates = async()=>{
     try {
-      const response = await axios.get(`http://localhost:5000/accounts/getstates`)
+      const response = await axios.get(`${backendIP}/accounts/getstates`)
       setStates(response.data);
     } catch (error) {
       console.log(error)
@@ -103,7 +103,7 @@ const Accounts = () => {
   }
   const getStations = async(sid)=>{
     try {
-      const response = await axios.get(`http://localhost:5000/accounts/getstations/${sid}`)
+      const response = await axios.get(`${backendIP}/accounts/getstations/${sid}`)
       setStations(response.data)
     } catch (error) {
       console.log(error)
@@ -112,7 +112,7 @@ const Accounts = () => {
 
   const handleStationValidation = async()=>{  // Station Validations
     try {
-      const response = await axios.post(`http://localhost:5000/accounts/validation/station`,{sid:selectedFormRecord.SID,zid:selectedFormRecord.ZID})
+      const response = await axios.post(`${backendIP}/accounts/validation/station`,{sid:selectedFormRecord.SID,zid:selectedFormRecord.ZID})
       setPopupMessage(response.data.msg)
       await response.data.alert ? setAlertbox(true) : setAlertbox(false)  // setting alertbox status true or false so that i can change colors.
       if (response.data.alert === false) {
@@ -134,7 +134,7 @@ const Accounts = () => {
         accountNameRef.current.focus()
       } else {
         if (isAdding) {
-          const response = await axios.post(`http://localhost:5000/accounts/validation/accountname`, { name: data.ACCNAME, webid: 0 })
+          const response = await axios.post(`${backendIP}/accounts/validation/accountname`, { name: data.ACCNAME, webid: 0 })
           setPopupMessage(response.data.msg)
           setAlertbox(response.data.alert)
           if (response.data.alert === false) {
@@ -144,7 +144,7 @@ const Accounts = () => {
             popupSwitchOff();
           }
         } else {
-          const response = await axios.post(`http://localhost:5000/accounts/validation/accountname`, { name: data.ACCNAME, webid: data.WEBID })
+          const response = await axios.post(`${backendIP}/accounts/validation/accountname`, { name: data.ACCNAME, webid: data.WEBID })
           setPopupMessage(response.data.msg)
           setAlertbox(response.data.alert)
           if (response.data.alert === false) {
@@ -178,14 +178,14 @@ const Accounts = () => {
         accountNameValidation(formData) // Have to call this here because of harami user changing the value after on blur validation and direct click on submit 
         if (alertbox === true) {  // Saving and editing of data will only be done if alert status is true on checking/calling accountNameValidation
           if (isAdding) {
-            const response = await axios.post(`http://localhost:5000/accounts/add/submit`, {data:formData});
+            const response = await axios.post(`${backendIP}/accounts/add/submit`, {data:formData});
             setPopupMessage(response.data.msg);
             setAlertbox(response.data.alert);
             handlePopup();
             accTypeRef.current.focus();
             response.data.alert && addSwitchOff();
           } else {
-            const response = await axios.post(`http://localhost:5000/accounts/edit/submit`, {data:formData});
+            const response = await axios.post(`${backendIP}/accounts/edit/submit`, {data:formData});
             setPopupMessage(response.data.msg);
             setAlertbox(response.data.alert);
             handlePopup();

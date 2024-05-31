@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { disabledButton } from '../../Constants/css';
+import { backendIP } from '../../Constants/main';
 
 const Stations = () => {
 
@@ -40,7 +41,7 @@ const Stations = () => {
 
 
   const getStates = async () => {   // Get all the states
-    const response = await axios.get('http://localhost:5000/stations/allstates')
+    const response = await axios.get(`${backendIP}/stations/allstates`)
     if (response.status === 200) {
       setStates(response.data)
     } else {
@@ -49,7 +50,7 @@ const Stations = () => {
   }
 
   const getStateStations = async (id)=>{  //Get all the stations according to state
-   const response = await axios.get(`http://localhost:5000/stations/statestations/${id}`)
+   const response = await axios.get(`${backendIP}/stations/statestations/${id}`)
    if (response.status === 200) {
       setStateStations(response.data)
    } else {
@@ -58,7 +59,7 @@ const Stations = () => {
   }
 
   const getAllStations = async ()=>{  // Get all stations 
-   const response = await axios.get('http://localhost:5000/stations/allstations')
+   const response = await axios.get(`${backendIP}/stations/allstations`)
    if (response.status === 200) {
        setSearchedStations(response.data)
    } else {
@@ -67,7 +68,7 @@ const Stations = () => {
   }
   
   const getSearchedStations = async (value)=>{  // Get the searched Stations
-    const response = await axios.get(`http://localhost:5000/stations/searched/${value}`)
+    const response = await axios.get(`${backendIP}/stations/searched/${value}`)
     if (response.status === 200) {
       setSearchedStations(response.data)
     } else {
@@ -103,7 +104,7 @@ const Stations = () => {
   }
 
   const handleAdd = async ()=>{
-    const response = await axios.post(`http://localhost:5000/stations/add/save`,{state:selectedState,station:newStation,sid:sid})
+    const response = await axios.post(`${backendIP}/stations/add/save`,{state:selectedState,station:newStation,sid:sid})
     setPopupMessage(response.data.msg)
     addSwitchOff()
     await response.data.alert?setAlertbox(true) : setAlertbox(false)  // setting alertbox status true or false so that i can change colors.
@@ -111,7 +112,7 @@ const Stations = () => {
  }
 
   const handleEdit = async ()=>{
-    const response = await axios.post (`http://localhost:5000/stations/edit/save`,{state:selectedState,station:editStation,zid:zid,sid:sid})
+    const response = await axios.post (`${backendIP}/stations/edit/save`,{state:selectedState,station:editStation,zid:zid,sid:sid})
     if (response.status===200) {
       setPopupMessage(response.data.msg)
       editSwitchOff()
@@ -125,7 +126,7 @@ const Stations = () => {
 
   const handleDelete = async (id) => {
     const delID = id
-    const response = await axios.delete(`http://localhost:5000/stations/delete/${delID}`)
+    const response = await axios.delete(`${backendIP}/stations/delete/${delID}`)
     if (response.status === 200) {
       setStateStations(); // setting this so that on click on delete that row gets removed from there and user have to select new row
       setZid(); // Cleaning ZID so that no conflict occurs after deleting
