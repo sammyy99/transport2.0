@@ -397,16 +397,22 @@ const Accounts = () => {
         saveRef.current.click();
       }}
   };
-const handleEnterKeyDown = (event) => {  // Event listener for Enter key navigation between input fields
-  if (!isSearching && event.key === 'Enter') {
-    event.preventDefault();
-    const formElements = Array.from(divRef.current.querySelectorAll('input, select'));
-    const index = formElements.indexOf(document.activeElement);
-    if (index > -1 && index < formElements.length - 1) {
-      formElements[index + 1].focus();
+  const handleEnterKeyDown = (event) => {
+    if (!isSearching && event.key === 'Enter') {
+      const activeElement = document.activeElement;
+  
+      if (activeElement.tagName === 'SELECT' && activeElement.value === '') {
+        // Allow default behavior if the dropdown value is empty
+        return;
+      }
+      event.preventDefault();
+      const formElements = Array.from(divRef.current.querySelectorAll('input, select'));
+      const index = formElements.indexOf(activeElement);
+      if (index > -1 && index < formElements.length - 1) {
+        formElements[index + 1].focus();
+      }
     }
-  }
-};
+  };
  
   useEffect(() => {
     if (isSearching) {
@@ -437,7 +443,7 @@ const handleEnterKeyDown = (event) => {  // Event listener for Enter key navigat
         }
       } else if (event.key === 'Escape') {
         searchSwitchOff();
-        setFullScreen(false); // setting full screen from escape too
+        //if (!isAdding && !isEditing) setFullScreen(false); // setting full screen from escape too
         addSwitchOff();
         editSwitchOff();
         //cleanMessages()
