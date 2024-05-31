@@ -45,7 +45,7 @@ const Accounts = () => {
     FAXNO: "",
     EMAILID: "",
     DOMAIN: "",
-  }); //console.log(selectedFormRecord)  // selected account record from table will be updated here
+  }); // console.log(selectedFormRecord)  // selected account record from table will be updated here
 
   const [states,setStates] = useState();
   const [stations,setStations] = useState();
@@ -390,15 +390,20 @@ const Accounts = () => {
   };
 
 
+  const handleSubmitKeyPress = (event) => {  // Exceptionally calling this key press outside the useEffect because of many issues
+    if (event.key === 'PageDown') {
+      if (isAdding || isEditing) handleSubmit(selectedFormRecord);
+    }
+  };
 
   useEffect(() => {
     if (isSearching) {
       searchRef.current?.focus();
-    };
-    if (isAdding || isEditing) {
-    accTypeRef.current.focus()
     }
-
+    if (isAdding || isEditing) {
+      accTypeRef.current.focus();
+    }
+  
     const handleKeyDown = (event) => {
       if (event.key === 'ArrowUp') {
         setSelectedRowIndex((prevIndex) => {
@@ -414,24 +419,27 @@ const Accounts = () => {
             const selectedRow = searchedRecords[selectedRowIndex];
             if (selectedRow) {
               handleRecordSelection(selectedRow);
-              searchSwitchOff()
+              searchSwitchOff();
             }
           }
         }
       } else if (event.key === 'Escape') {
         searchSwitchOff();
         setFullScreen(false); // setting full screen from escape too
-        addSwitchOff()
-        editSwitchOff()
+        addSwitchOff();
+        editSwitchOff();
         //cleanMessages()
-        popupSwitchOff()
-      }
+        popupSwitchOff();
+      } 
     };
-    document.addEventListener('keydown', handleKeyDown)
+  
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleSubmitKeyPress);  // exception for submit  key
     return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isSearching, isAdding, isEditing, selectedRowIndex, searchedRecords, fullScreen,]);
+      document.removeEventListener('keydown', handleKeyDown);
+      document.addEventListener('keydown', handleSubmitKeyPress); // exception for submit key
+    };
+  }, [isSearching, isAdding, isEditing, selectedRowIndex, searchedRecords, fullScreen]);  
 
 
   return (

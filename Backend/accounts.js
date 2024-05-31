@@ -119,7 +119,7 @@ router.post("/accounts/add/submit", async (req, res) => {  // saving FormRecord 
       FAXNO,
       EMAILID,
       DOMAIN
-    } = req.body.data; console.log(req.body.data)
+    } = req.body.data; // console.log(req.body.data)
 
     // Helper function to handle null values
     const formatValue = (value) => (value === null || value === '' ? 'null' : `'${value}'`);
