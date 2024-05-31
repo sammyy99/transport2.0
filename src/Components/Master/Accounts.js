@@ -390,7 +390,7 @@ const Accounts = () => {
     return new Date(dateString).toISOString().slice(0, 10); // Ensures YYYY-MM-DD format
   };
 
-
+ 
   const handleSubmitKeyPress = (event) => {  // Calling this outside because of state issues on saving current data
     if (event.key === 'F2') {
       if ((isAdding || isEditing) && saveRef.current) {
@@ -574,7 +574,8 @@ const handleEnterKeyDown = (event) => {  // Event listener for Enter key navigat
               <div className="flex w-full">
                 <div className="flex w-1/2">
                   <div><p className={`${accountLabels}`}>A/C Type <span className="text-red-600">*</span> :</p></div>
-                  <select ref={accTypeRef} onFocus={handleFocus} id={0} name="ACCTYPE" value={selectedFormRecord.ACCTYPE} onChange={handleChange}  
+                  <select ref={accTypeRef} onFocus={(e)=>{handleFocus(e);}} 
+                  id={0} name="ACCTYPE" value={selectedFormRecord.ACCTYPE} onChange={handleChange}  
                   disabled={!isAdding && !isEditing} 
                   className={`${accountsInputBox} ${helpId === 0 && accountsInputActive} w-56`}>
                       <option value={selectedFormRecord.ACCTYPE}>{selectedFormRecord.ACCTYPE}</option>
@@ -585,7 +586,7 @@ const handleEnterKeyDown = (event) => {  // Event listener for Enter key navigat
                 </div>
                 <div className="flex w-1/2">
                   <div><p className={`${accountLabels}`}>State <span className="text-red-600">*</span> :</p></div>
-                  <select onFocus={(e)=>{handleFocus(e);getStates();}} id={1} ref={stateRef}
+                  <select onFocus={(e)=>{handleFocus(e); getStates();}} id={1} ref={stateRef}
                    value={selectedFormRecord.SID} name="STATE" onChange={handleChange} disabled={!isAdding && !isEditing}
                   className={`${accountsInputBox} ${helpId === 1 && accountsInputActive} w-56`}>
                     <option value={selectedFormRecord.SID}>{selectedFormRecord.STATE}</option>
@@ -599,7 +600,7 @@ const handleEnterKeyDown = (event) => {  // Event listener for Enter key navigat
               <div className="flex w-full mt-0">
                 <div className="flex w-1/2">
                   <div><p className={`${accountLabels}`}>Station <span className="text-red-600">*</span> :</p></div>
-                  <select onFocus={(e) => { handleFocus(e); selectedFormRecord.SID && getStations(selectedFormRecord.SID); }} onBlur={handleStationValidation}
+                  <select onFocus={(e) => { handleFocus(e); selectedFormRecord.SID && getStations(selectedFormRecord.SID);}} onBlur={handleStationValidation}
                     ref={stationRef} id={2} value={selectedFormRecord.ZID} name="DISTRICT" onChange={handleChange} disabled={!isAdding && !isEditing}
                     className={`${accountsInputBox} ${helpId === 2 && accountsInputActive} w-56`}>
                     <option value={selectedFormRecord.ZID}>{selectedFormRecord.DISTRICT}</option>

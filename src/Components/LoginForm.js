@@ -67,7 +67,7 @@ const LoginForm = () => {
    };
 
   return (
-    <div className='px-28'>
+    <div className=''>
       <div className='text-4xl mb-2'>Welcome back :)</div>
       <div className='text-gray-500 mb-10'>To stay updated on Transporters, login with your usename and password.</div>
 
