@@ -74,6 +74,7 @@ const Accounts = () => {
   const stateRef = useRef();
   const stationRef = useRef();
   const accountNameRef = useRef();
+  const saveRef = useRef();
 
 
   const getAllAccounts = async (order) => {
@@ -167,7 +168,7 @@ const Accounts = () => {
         DATE: formatInputDateToMSSQL(data.DATE),
         LDATE: formatInputDateToMSSQL(data.LDATE),
       }
-      console.log(formData)
+      //console.log(formData)
       if (formData.ACCTYPE.trim() === '' || formData.ACCNAME.trim() === '' || formData.STATE.trim() === '' || formData.DISTRICT.trim() === '') {
         setAlertbox(false)
         setPopupMessage('Fill all the mandatory fields before saving the record')
@@ -194,7 +195,7 @@ const Accounts = () => {
         } else {
 
         }
-      }      
+      }    
     } catch (error) {
       console.log(error)
     }
@@ -390,9 +391,11 @@ const Accounts = () => {
   };
 
 
-  const handleSubmitKeyPress = (event) => {  // Exceptionally calling this key press outside the useEffect because of many issues
-    if (event.key === 'PageDown') {
-      if (isAdding || isEditing) handleSubmit(selectedFormRecord);
+  const handleSubmitKeyPress = (event) => {  // Calling this outside because of state issues on saving current data
+    if (event.key === 'F2') {
+      if ((isAdding || isEditing) && saveRef.current) {
+        saveRef.current.click();
+      }
     }
   };
 
@@ -437,7 +440,7 @@ const Accounts = () => {
     document.addEventListener('keydown', handleSubmitKeyPress);  // exception for submit  key
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      document.addEventListener('keydown', handleSubmitKeyPress); // exception for submit key
+      document.removeEventListener('keydown', handleSubmitKeyPress); // exception for submit key
     };
   }, [isSearching, isAdding, isEditing, selectedRowIndex, searchedRecords, fullScreen]);  
 
@@ -455,6 +458,7 @@ const Accounts = () => {
             onClick={()=>{addSwitchOff();editSwitchOff();}}
             >Cancel = Escape</button>
             <button className="py-1 px-3 w-44 bg-green-600 hover:bg-green-500 text-white rounded-md "
+            ref={saveRef}
             onClick={()=>{handleSubmit(selectedFormRecord);}}
             >Save = Page Down</button>
             </div>)
