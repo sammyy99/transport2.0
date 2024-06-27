@@ -4,7 +4,8 @@ import { connectDB } from "./db.js";
 import loginRouter from './login.js'
 import statesRouter from './states.js';
 import stationsRouter from './stations.js';
-import accountsRouter from './accounts.js'
+import accountsRouter from './accounts.js';
+import printRouter from './print.js'
 
 const app = express();
 const port = 5000;
@@ -19,6 +20,7 @@ app.use("/", loginRouter); // Login routes
 app.use("/", statesRouter); // State routes
 app.use("/", stationsRouter); // Station routes
 app.use("/", accountsRouter); // Accounts routes
+app.use("/", printRouter); // Print routes
 
 app.listen(port,()=>{
     console.log("Your server is running on port 5000.")

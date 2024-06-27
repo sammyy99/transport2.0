@@ -3,6 +3,8 @@ import axios from 'axios';
 import { accountType, help } from "../../Constants/accounts";
 import { accountLabels, accountsInputBox, accountsInputActive, disabledButton } from "../../Constants/css";
 import { backendIP } from "../../Constants/main";
+import { useDispatch } from "react-redux";
+import { printData } from "../../Redux/printSlice";
 
 const Accounts = () => {
   const [selectedFormRecord, setselectedFormRecord] = useState({
@@ -75,6 +77,7 @@ const Accounts = () => {
   const stationRef = useRef();
   const accountNameRef = useRef();
   const saveRef = useRef();
+  const dispatch = useDispatch();
 
 
   const getAllAccounts = async (order) => {
@@ -365,7 +368,7 @@ const Accounts = () => {
   }
   //---------------------------------------------------Switches-------------------------------------------------------------//
 
-
+  //---------------------------------------------------Utilities-------------------------------------------------------------//
   const toggleFullScreen = () => {   // for full screen
     if (divRef.current) {
       if (!document.fullscreenElement) {
@@ -379,6 +382,17 @@ const Accounts = () => {
       }
     }
   };
+
+  const getPrintData = async ()=>{
+    try {
+      const response = await axios.get(`${backendIP}/accounts/print`)
+      dispatch(printData(response.data))
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  //---------------------------------------------------Utilities End-------------------------------------------------------------//
+
 
   const formatMSSQLDateToInput = (dateString) => { // Formatting MSSQL Date format to JSX Date format
     if (!dateString) return '';
@@ -503,7 +517,9 @@ const Accounts = () => {
               <button className="py-1 px-3 w-20 bg-neutral-800 text-white rounded-md transition-all duration-200 hover:bg-neutral-600"
                 onClick={() => { getAllAccounts('DISTRICT'); searchSwitchOn(); setWhichSearch('DISTRICT') }}
               >Station</button>
-              <button className="py-1 px-3 w-20 bg-neutral-800 text-white rounded-md transition-all duration-200 hover:bg-neutral-600">Print</button>
+              <button className="py-1 px-3 w-20 bg-neutral-800 text-white rounded-md transition-all duration-200 hover:bg-neutral-600"
+                onClick={()=>{getPrintData()}}
+              >Print</button>
             </div>
           </div>
 
@@ -853,7 +869,7 @@ const Accounts = () => {
             <div className="w-[70%] px-4 py-1 bg-amber-300">{helpId===null?'Information for respective fields will be displayed on Adding or Editing.':helpMsg}</div>
             <button onClick={toggleFullScreen} className="py-1 w-[15%] bg-neutral-800 text-white rounded-r-md transition-all duration-200 hover:bg-neutral-600">Full Screen</button>
           </div>
-
+          
         </div>
       </div>
     </div>
