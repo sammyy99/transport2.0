@@ -3,8 +3,8 @@ import axios from 'axios';
 import { accountType, help } from "../../Constants/accounts";
 import { accountLabels, accountsInputBox, accountsInputActive, disabledButton } from "../../Constants/css";
 import { backendIP } from "../../Constants/main";
-import { useDispatch } from "react-redux";
-import { printData } from "../../Redux/printSlice";
+import { useReactToPrint } from "react-to-print";
+import AccountsPrint from "../Print/AccountsPrint";
 
 const Accounts = () => {
   const [selectedFormRecord, setselectedFormRecord] = useState({
@@ -49,6 +49,7 @@ const Accounts = () => {
     DOMAIN: "",
   }); // console.log(selectedFormRecord)  // selected account record from table will be updated here
 
+
   const [states,setStates] = useState();
   const [stations,setStations] = useState();
 
@@ -65,6 +66,7 @@ const Accounts = () => {
   const [helpMsg, setHelpMsg] = useState('') // for getting msg
 
   const [fullScreen, setFullScreen] = useState(false); //console.log(fullScreen)
+  const [printData, setPrintData] = useState()  // used for setting the data for print 
 
   const [popupMessage, setPopupMessage] = useState("") // to update popup message 
   const [showHidePopup, setShowHidePopup] = useState(false) // to show or hide popup
@@ -77,7 +79,7 @@ const Accounts = () => {
   const stationRef = useRef();
   const accountNameRef = useRef();
   const saveRef = useRef();
-  const dispatch = useDispatch();
+  const printComponentRef = useRef();  // used for printing component
 
 
   const getAllAccounts = async (order) => {
@@ -383,10 +385,14 @@ const Accounts = () => {
     }
   };
 
+  const handlePrintout = useReactToPrint({
+    content : ()=> printComponentRef.current
+  });
   const getPrintData = async ()=>{
     try {
       const response = await axios.get(`${backendIP}/accounts/print`)
-      dispatch(printData(response.data))
+      setPrintData(response.data)
+      setTimeout(handlePrintout, 100);
     } catch (error) {
       console.log(error)
     }
@@ -522,6 +528,10 @@ const Accounts = () => {
               >Print</button>
             </div>
           </div>
+
+           <div style={{ display: 'none' }}>  {/*----------Printing Component----------*/}
+            <AccountsPrint ref={printComponentRef} data={printData} />
+           </div>
 
           {/*-------------------------------------------- Table Search ----------------------------------------*/}
           <div className={`${isSearching ? 'block' : 'hidden'} w-[55rem] mx-auto rounded-md mt-8 h-[24rem] shadow-lg shadow-black border-black `}>
@@ -869,7 +879,7 @@ const Accounts = () => {
             <div className="w-[70%] px-4 py-1 bg-amber-300">{helpId===null?'Information for respective fields will be displayed on Adding or Editing.':helpMsg}</div>
             <button onClick={toggleFullScreen} className="py-1 w-[15%] bg-neutral-800 text-white rounded-r-md transition-all duration-200 hover:bg-neutral-600">Full Screen</button>
           </div>
-          
+    
         </div>
       </div>
     </div>
